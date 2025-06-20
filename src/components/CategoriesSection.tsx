@@ -37,9 +37,9 @@ export default function CategoriesSection() {
               <Link
                 key={category.id}
                 href={`/produkty/${category.slug}`}
-                className={`group relative p-8 rounded-2xl transition-all duration-300 hover:shadow-xl hover:-translate-y-2 ${
+                className={`group relative p-8 rounded-2xl transition-all duration-300 hover:shadow-xl ${
                   isSpecial 
-                    ? 'bg-gradient-to-br from-accent-100 to-accent-200 border-2 border-accent-300' 
+                    ? 'bg-gradient-to-br from-accent-100 to-accent-200 border-2 border-accent-300 hover:from-accent-200 hover:to-accent-300' 
                     : 'bg-gradient-to-br from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200'
                 }`}
               >
@@ -85,7 +85,7 @@ export default function CategoriesSection() {
                 </div>
                 
                 {/* Hover effect */}
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 opacity-0 group-hover:opacity-100" />
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </Link>
             );
           })}

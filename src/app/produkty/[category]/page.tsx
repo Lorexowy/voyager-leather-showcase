@@ -189,28 +189,36 @@ export default function CategoryPage() {
     );
   }
 
-  // Filtruj produkty dla danej kategorii
-  const categoryProducts = mockProducts.filter(product => product.category === category.id);
-  
+  // Filtruj produkty - najpierw według kategorii, potem według filtrów
   const filteredProducts = useMemo(() => {
-    return categoryProducts.filter(product => {
-      // Search filter
-      if (searchTerm && !product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !product.description.toLowerCase().includes(searchTerm.toLowerCase())) {
-        return false;
-      }
+    // Zaczynamy od wszystkich produktów
+    let products = mockProducts;
+    
+    // Jeśli nie ma filtra kategorii lub jest ustawiony na obecną kategorię, filtruj tylko po kategorii z URL
+    if (!filters.category || filters.category === category.id) {
+      products = products.filter(product => product.category === category.id);
+    } else {
+      // Jeśli użytkownik wybrał inną kategorię w filtrach, pokaż produkty z tej kategorii
+      products = products.filter(product => product.category === filters.category);
+    }
+    
+    // Zastosuj filtry wyszukiwania
+    if (searchTerm) {
+      products = products.filter(product => 
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
-      // Color filter
-      if (filters.colors && filters.colors.length > 0) {
-        const hasMatchingColor = filters.colors.some(color => 
-          product.availableColors.includes(color)
-        );
-        if (!hasMatchingColor) return false;
-      }
+    // Zastosuj filtry kolorów
+    if (filters.colors && filters.colors.length > 0) {
+      products = products.filter(product => 
+        filters.colors!.some(color => product.availableColors.includes(color))
+      );
+    }
 
-      return true;
-    });
-  }, [categoryProducts, searchTerm, filters]);
+    return products;
+  }, [mockProducts, searchTerm, filters, category.id]);
 
   const isSpecialCategory = category.id === 'as-aleksandra-sopel';
 
@@ -301,13 +309,10 @@ export default function CategoryPage() {
           {/* Filters Sidebar */}
           <div className="lg:w-64 flex-shrink-0">
             <ProductFilters 
-              filters={{ ...filters, category: category.id }}
-              onFiltersChange={(newFilters) => {
-                // Usuń kategorię z filtrów, bo jest już ustawiona
-                const { category: _, ...otherFilters } = newFilters;
-                setFilters(otherFilters);
-              }}
+              filters={filters}
+              onFiltersChange={setFilters}
               totalProducts={filteredProducts.length}
+              hideCategories={true}
             />
           </div>
 
@@ -322,7 +327,7 @@ export default function CategoryPage() {
                   Nie znaleziono produktów
                 </h3>
                 <p className="text-brown-600 mb-6">
-                  Nie mamy jeszcze produktów w tej kategorii z wybranymi filtrami.
+                  Nie mamy produktów pasujących do wybranych kryteriów.
                 </p>
                 <button
                   onClick={() => {
@@ -339,7 +344,12 @@ export default function CategoryPage() {
                 {/* Results count */}
                 <div className="flex justify-between items-center mb-6">
                   <div className="text-brown-600">
-                    <span className="font-medium">{filteredProducts.length}</span> z <span className="font-medium">{categoryProducts.length}</span> produktów
+                    <span className="font-medium">{filteredProducts.length}</span> produktów
+                    {filters.category && filters.category !== category.id && (
+                      <span className="ml-2 text-sm">
+                        w kategorii: {CATEGORIES.find(c => c.id === filters.category)?.name}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -354,7 +364,7 @@ export default function CategoryPage() {
                 {filteredProducts.length > 0 && (
                   <div className="text-center mt-12">
                     <p className="text-brown-600 text-sm">
-                      Pokazano wszystkie dostępne produkty w tej kategorii
+                      Pokazano wszystkie dostępne produkty
                     </p>
                   </div>
                 )}

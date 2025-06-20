@@ -8,6 +8,7 @@ interface ProductFiltersProps {
   filters: FilterOptions;
   onFiltersChange: (filters: FilterOptions) => void;
   totalProducts: number;
+  hideCategories?: boolean; // Nowy prop do ukrycia filtrów kategorii
 }
 
 const availableColors = [
@@ -20,9 +21,16 @@ const availableColors = [
   'Granatowy'
 ];
 
-export default function ProductFilters({ filters, onFiltersChange, totalProducts }: ProductFiltersProps) {
+export default function ProductFilters({ 
+  filters, 
+  onFiltersChange, 
+  totalProducts, 
+  hideCategories = false 
+}: ProductFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [openSections, setOpenSections] = useState<Set<string>>(new Set(['category', 'colors']));
+  const [openSections, setOpenSections] = useState<Set<string>>(
+    new Set(hideCategories ? ['colors'] : ['category', 'colors'])
+  );
 
   const toggleSection = (section: string) => {
     const newOpenSections = new Set(openSections);
@@ -54,10 +62,18 @@ export default function ProductFilters({ filters, onFiltersChange, totalProducts
   };
 
   const clearFilters = () => {
-    onFiltersChange({});
+    if (hideCategories) {
+      // W kategorii - wyczyść tylko kolory
+      onFiltersChange({ colors: undefined });
+    } else {
+      // Na stronie wszystkich produktów - wyczyść wszystko
+      onFiltersChange({});
+    }
   };
 
-  const hasActiveFilters = filters.category || (filters.colors && filters.colors.length > 0);
+  const hasActiveFilters = hideCategories 
+    ? (filters.colors && filters.colors.length > 0)
+    : (filters.category || (filters.colors && filters.colors.length > 0));
 
   return (
     <>
@@ -89,7 +105,7 @@ export default function ProductFilters({ filters, onFiltersChange, totalProducts
                 onClick={clearFilters}
                 className="text-sm text-brown-600 hover:text-brown-800 transition-colors"
               >
-                Wyczyść wszystkie
+                Wyczyść {hideCategories ? 'filtry' : 'wszystkie'}
               </button>
             )}
           </div>
@@ -98,49 +114,51 @@ export default function ProductFilters({ filters, onFiltersChange, totalProducts
           </p>
         </div>
 
-        {/* Category filter */}
-        <div className="border-b border-brown-100">
-          <button
-            onClick={() => toggleSection('category')}
-            className="w-full flex items-center justify-between p-6 text-left"
-          >
-            <span className="font-medium text-brown-800">Kategoria</span>
-            <ChevronDown className={`w-4 h-4 text-brown-600 transition-transform ${
-              openSections.has('category') ? 'rotate-180' : ''
-            }`} />
-          </button>
-          
-          {openSections.has('category') && (
-            <div className="px-6 pb-6 space-y-3">
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="category"
-                  checked={!filters.category}
-                  onChange={() => handleCategoryChange(undefined)}
-                  className="w-4 h-4 text-brown-600 border-brown-300 focus:ring-brown-500"
-                />
-                <span className="text-sm text-brown-700">Wszystkie kategorie</span>
-              </label>
-              
-              {CATEGORIES.map((category) => (
-                <label key={category.id} className="flex items-center space-x-3 cursor-pointer">
+        {/* Category filter - tylko gdy nie są ukryte */}
+        {!hideCategories && (
+          <div className="border-b border-brown-100">
+            <button
+              onClick={() => toggleSection('category')}
+              className="w-full flex items-center justify-between p-6 text-left"
+            >
+              <span className="font-medium text-brown-800">Kategoria</span>
+              <ChevronDown className={`w-4 h-4 text-brown-600 transition-transform ${
+                openSections.has('category') ? 'rotate-180' : ''
+              }`} />
+            </button>
+            
+            {openSections.has('category') && (
+              <div className="px-6 pb-6 space-y-3">
+                <label className="flex items-center space-x-3 cursor-pointer">
                   <input
                     type="radio"
                     name="category"
-                    checked={filters.category === category.id}
-                    onChange={() => handleCategoryChange(category.id)}
+                    checked={!filters.category}
+                    onChange={() => handleCategoryChange(undefined)}
                     className="w-4 h-4 text-brown-600 border-brown-300 focus:ring-brown-500"
                   />
-                  <span className="text-sm text-brown-700">{category.name}</span>
+                  <span className="text-sm text-brown-700">Wszystkie kategorie</span>
                 </label>
-              ))}
-            </div>
-          )}
-        </div>
+                
+                {CATEGORIES.map((category) => (
+                  <label key={category.id} className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="category"
+                      checked={filters.category === category.id}
+                      onChange={() => handleCategoryChange(category.id)}
+                      className="w-4 h-4 text-brown-600 border-brown-300 focus:ring-brown-500"
+                    />
+                    <span className="text-sm text-brown-700">{category.name}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Colors filter */}
-        <div className="border-b border-brown-100">
+        <div className={`${!hideCategories ? 'border-b border-brown-100' : ''}`}>
           <button
             onClick={() => toggleSection('colors')}
             className="w-full flex items-center justify-between p-6 text-left"
@@ -173,7 +191,7 @@ export default function ProductFilters({ filters, onFiltersChange, totalProducts
           <div className="p-6">
             <h4 className="text-sm font-medium text-brown-800 mb-3">Aktywne filtry:</h4>
             <div className="flex flex-wrap gap-2">
-              {filters.category && (
+              {!hideCategories && filters.category && (
                 <span className="inline-flex items-center px-3 py-1 bg-brown-100 text-brown-700 rounded-full text-xs">
                   {CATEGORIES.find(c => c.id === filters.category)?.name}
                   <button
