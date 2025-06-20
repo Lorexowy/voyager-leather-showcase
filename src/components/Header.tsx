@@ -13,87 +13,87 @@ export default function Header() {
   const toggleProducts = () => setIsProductsOpen(!isProductsOpen);
 
   return (
-    <header className="bg-white/95 backdrop-blur-sm shadow-sm sticky top-0 z-50">
+    <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-brown-600 to-brown-800 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">V</span>
+        <div className="flex justify-between items-center h-20">
+          {/* Logo - minimalistyczny */}
+          <Link href="/" className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gray-900 rounded-sm flex items-center justify-center">
+              <span className="text-white font-light text-lg tracking-wider">V</span>
             </div>
-            <span className="text-2xl font-serif font-bold text-brown-800">Voyager</span>
+            <span className="text-2xl font-light text-gray-900 tracking-wide">Voyager</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-brown-700 hover:text-brown-900 transition-colors">
-              Strona Główna
+          {/* Desktop Navigation - minimalistyczny */}
+          <nav className="hidden md:flex items-center space-x-12">
+            <Link href="/" className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light">
+              Home
             </Link>
             
-            {/* Dropdown Products */}
+            {/* Dropdown Products - czysty design */}
             <div className="relative">
               <button
                 onClick={toggleProducts}
-                className="flex items-center space-x-1 text-brown-700 hover:text-brown-900 transition-colors"
+                className="flex items-center space-x-1 text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light"
               >
-                <span>Nasze Produkty</span>
+                <span>Products</span>
                 <ChevronDown className="w-4 h-4" />
               </button>
               
               {isProductsOpen && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-brown-100 py-2 z-50">
+                <div className="absolute top-full left-0 mt-3 w-80 bg-white rounded-sm shadow-2xl border border-gray-50 py-4 z-50">
                   {CATEGORIES.map((category) => (
                     <Link
                       key={category.id}
                       href={`/produkty/${category.slug}`}
-                      className="block px-4 py-3 text-sm text-brown-700 hover:bg-primary-50 hover:text-brown-900 transition-colors"
+                      className="block px-6 py-4 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 border-b border-gray-50 last:border-b-0"
                       onClick={() => setIsProductsOpen(false)}
                     >
                       <div className="font-medium">{category.name}</div>
-                      <div className="text-xs text-brown-500 mt-1">{category.description}</div>
+                      <div className="text-xs text-gray-500 mt-1 font-light">{category.description}</div>
                     </Link>
                   ))}
                 </div>
               )}
             </div>
 
-            <Link href="/o-nas" className="text-brown-700 hover:text-brown-900 transition-colors">
-              O Nas
+            <Link href="/o-nas" className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light">
+              About
             </Link>
-            <Link href="/kontakt" className="text-brown-700 hover:text-brown-900 transition-colors">
-              Kontakt
+            <Link href="/kontakt" className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light">
+              Contact
             </Link>
           </nav>
 
-          {/* Mobile menu button */}
+          {/* Mobile menu button - minimalistyczny */}
           <button
             onClick={toggleMenu}
-            className="md:hidden p-2 rounded-md text-brown-700 hover:text-brown-900 hover:bg-brown-50"
+            className="md:hidden p-2 text-gray-700 hover:text-gray-900"
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation - clean */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-brown-100">
-            <div className="flex flex-col space-y-4">
+          <div className="md:hidden py-6 border-t border-gray-100">
+            <div className="flex flex-col space-y-6">
               <Link 
                 href="/" 
-                className="text-brown-700 hover:text-brown-900 transition-colors px-2 py-1"
+                className="text-gray-700 hover:text-gray-900 transition-colors font-light"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Strona Główna
+                Home
               </Link>
               
               <div>
-                <div className="text-brown-800 font-medium px-2 py-1 mb-2">Nasze Produkty</div>
-                <div className="ml-4 space-y-2">
+                <div className="text-gray-900 font-medium mb-4">Products</div>
+                <div className="ml-4 space-y-4">
                   {CATEGORIES.map((category) => (
                     <Link
                       key={category.id}
                       href={`/produkty/${category.slug}`}
-                      className="block text-sm text-brown-600 hover:text-brown-900 transition-colors px-2 py-1"
+                      className="block text-sm text-gray-600 hover:text-gray-900 transition-colors font-light"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {category.name}
@@ -104,17 +104,17 @@ export default function Header() {
               
               <Link 
                 href="/o-nas" 
-                className="text-brown-700 hover:text-brown-900 transition-colors px-2 py-1"
+                className="text-gray-700 hover:text-gray-900 transition-colors font-light"
                 onClick={() => setIsMenuOpen(false)}
               >
-                O Nas
+                About
               </Link>
               <Link 
                 href="/kontakt" 
-                className="text-brown-700 hover:text-brown-900 transition-colors px-2 py-1"
+                className="text-gray-700 hover:text-gray-900 transition-colors font-light"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Kontakt
+                Contact
               </Link>
             </div>
           </div>
