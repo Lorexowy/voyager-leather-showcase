@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { 
   UserPlus, 
@@ -18,8 +19,7 @@ import toast from 'react-hot-toast';
 import { 
   createNewAdmin, 
   getAllAdmins, 
-  removeAdmin, 
-  resendPasswordReset,
+  removeAdmin,
   AdminUser 
 } from '@/lib/admin-management';
 import ConfirmDialog from './ConfirmDialog';
@@ -39,6 +39,7 @@ export default function AdminManagementPanel() {
   const [adminToDelete, setAdminToDelete] = useState<AdminUser | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   const {
     register,
@@ -69,12 +70,20 @@ export default function AdminManagementPanel() {
     setIsCreating(true);
     try {
       await createNewAdmin(data.email, data.temporaryPassword, data.displayName);
-      toast.success('Administrator został utworzony! Email z resetem hasła został wysłany.');
+      toast.success('Administrator został utworzony pomyślnie!');
       reset();
       setShowAddForm(false);
       fetchAdmins();
     } catch (error: any) {
-      toast.error(error.message);
+      if (error.message.includes('przekierowany na stronę logowania')) {
+        toast.success('Administrator został utworzony pomyślnie!');
+        toast.loading('Przekierowywanie na stronę logowania...', { duration: 2000 });
+        setTimeout(() => {
+          router.push('/admin/login');
+        }, 2000);
+      } else {
+        toast.error(error.message);
+      }
     } finally {
       setIsCreating(false);
     }
@@ -99,15 +108,6 @@ export default function AdminManagementPanel() {
       toast.error(error.message);
     } finally {
       setIsDeleting(false);
-    }
-  };
-
-  const handleResendPasswordReset = async (email: string) => {
-    try {
-      await resendPasswordReset(email);
-      toast.success(`Email z resetem hasła został wysłany na ${email}`);
-    } catch (error: any) {
-      toast.error(error.message);
     }
   };
 
@@ -198,14 +198,14 @@ export default function AdminManagementPanel() {
               {/* Temporary Password */}
               <div>
                 <label htmlFor="temporaryPassword" className="block text-sm font-light text-gray-900 mb-2">
-                  Hasło tymczasowe <span className="text-red-500">*</span>
+                  Hasło <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     id="temporaryPassword"
                     {...register('temporaryPassword', {
-                      required: 'Hasło tymczasowe jest wymagane',
+                      required: 'Hasło jest wymagane',
                       minLength: {
                         value: 8,
                         message: 'Hasło musi mieć co najmniej 8 znaków'
@@ -214,7 +214,7 @@ export default function AdminManagementPanel() {
                     className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 font-light ${
                       errors.temporaryPassword ? 'border-red-300' : 'border-gray-300'
                     }`}
-                    placeholder="Wprowadź hasło tymczasowe"
+                    placeholder="Wprowadź hasło"
                   />
                   <button
                     type="button"
@@ -231,7 +231,7 @@ export default function AdminManagementPanel() {
                   </p>
                 )}
                 <p className="mt-1 text-xs text-gray-500 font-light">
-                  Administrator otrzyma email z możliwością ustawienia własnego hasła
+                  Administrator będzie używał tego hasła do logowania
                 </p>
               </div>
 
@@ -328,14 +328,6 @@ export default function AdminManagementPanel() {
                   {/* Actions */}
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => handleResendPasswordReset(admin.email)}
-                      className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                      title="Wyślij reset hasła"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                    </button>
-                    
-                    <button
                       onClick={() => handleDeleteAdmin(admin)}
                       className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                       title="Usuń administratora"
@@ -368,8 +360,8 @@ export default function AdminManagementPanel() {
             <div className="text-blue-800 text-sm font-light space-y-1">
               <p>1. Nowy administrator zostanie utworzony w Firebase Authentication</p>
               <p>2. Automatycznie zostanie dodany do bazy danych administratorów</p>
-              <p>3. Otrzyma email z linkiem do ustawienia własnego hasła</p>
-              <p>4. Po ustawieniu hasła będzie mógł logować się do panelu administratora</p>
+              <p>3. Będzie mógł logować się używając podanego emaila i hasła</p>
+              <p>4. Po utworzeniu zostaniesz przekierowany na stronę logowania</p>
             </div>
           </div>
         </div>

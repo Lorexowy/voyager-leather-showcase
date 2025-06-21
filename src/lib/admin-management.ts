@@ -2,8 +2,8 @@
 
 import { 
   createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  updateProfile 
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut
 } from 'firebase/auth';
 import { 
   doc, 
@@ -31,8 +31,21 @@ export const createNewAdmin = async (
   temporaryPassword: string,
   displayName?: string
 ): Promise<string> => {
+  const currentUser = auth.currentUser;
+  const currentUserEmail = currentUser?.email;
+  
+  if (!currentUser) {
+    throw new Error('Musisz być zalogowany, aby dodać administratora');
+  }
+
   try {
-    // 1. Utwórz użytkownika w Authentication
+    // 1. Zapisz dane obecnego użytkownika
+    const currentUserData = {
+      uid: currentUser.uid,
+      email: currentUser.email,
+    };
+
+    // 2. Utwórz nowego użytkownika (to automatycznie go zaloguje)
     const userCredential = await createUserWithEmailAndPassword(
       auth, 
       email, 
@@ -41,26 +54,33 @@ export const createNewAdmin = async (
     
     const newUser = userCredential.user;
     
-    // 2. Aktualizuj profil użytkownika
-    if (displayName) {
-      await updateProfile(newUser, { displayName });
-    }
-    
-    // 3. Dodaj do kolekcji admins w Firestore
+    // 3. Dodaj nowego użytkownika do kolekcji admins
     await setDoc(doc(db, COLLECTIONS.ADMINS, newUser.uid), {
       email: email,
       role: 'admin',
       createdAt: Timestamp.now(),
-      createdBy: auth.currentUser?.email || 'system',
+      createdBy: currentUserEmail || 'system',
       displayName: displayName || null,
     });
     
-    // 4. Wyślij email z resetem hasła (użytkownik ustawi własne hasło)
-    await sendPasswordResetEmail(auth, email);
+    // 4. Wyloguj nowego użytkownika
+    await firebaseSignOut(auth);
+    
+    // 5. Zaloguj z powrotem oryginalnego użytkownika
+    if (currentUserData.email) {
+      // Tu nie możemy zalogować z powrotem automatycznie, bo nie mamy hasła
+      // Zamiast tego przekierujemy na stronę logowania z informacją
+      throw new Error('RELOGIN_REQUIRED');
+    }
     
     return newUser.uid;
   } catch (error: any) {
     console.error('Error creating new admin:', error);
+    
+    if (error.message === 'RELOGIN_REQUIRED') {
+      throw new Error('Administrator został utworzony pomyślnie. Zostaniesz przekierowany na stronę logowania.');
+    }
+    
     throw new Error(`Nie udało się utworzyć administratora: ${error.message}`);
   }
 };
@@ -114,16 +134,6 @@ export const removeAdmin = async (adminId: string): Promise<void> => {
   } catch (error: any) {
     console.error('Error removing admin:', error);
     throw new Error(`Nie udało się usunąć administratora: ${error.message}`);
-  }
-};
-
-// Wyślij ponownie email z resetem hasła
-export const resendPasswordReset = async (email: string): Promise<void> => {
-  try {
-    await sendPasswordResetEmail(auth, email);
-  } catch (error: any) {
-    console.error('Error sending password reset:', error);
-    throw new Error('Nie udało się wysłać emaila z resetem hasła');
   }
 };
 
