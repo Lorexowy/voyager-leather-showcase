@@ -1,87 +1,80 @@
 'use client';
 
 import Link from 'next/link';
-import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Mail, Phone, MapPin, Instagram, Linkedin } from 'lucide-react';
 import { CATEGORIES } from '@/types';
 
 export default function Footer() {
   return (
-    <footer className="bg-brown-900 text-white">
+    <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main footer content */}
-        <div className="py-16 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Company info */}
+        <div className="py-20 grid md:grid-cols-2 lg:grid-cols-4 gap-12">
+          {/* Company info - minimal */}
           <div className="lg:col-span-1">
-            <div className="flex items-center space-x-2 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-brown-900 font-bold text-lg">V</span>
+            <div className="flex items-center space-x-3 mb-8">
+              <div className="w-8 h-8 bg-white flex items-center justify-center">
+                <span className="text-gray-900 font-light text-lg tracking-wider">V</span>
               </div>
-              <span className="text-2xl font-serif font-bold">Voyager</span>
+              <span className="text-2xl font-light tracking-wide">Voyager</span>
             </div>
             
-            <p className="text-brown-200 mb-6 leading-relaxed">
+            <p className="text-gray-400 mb-8 leading-relaxed font-light">
               Ekskluzywna galanteria skórzana najwyższej jakości. 
               Tworzymy produkty z pasją i dbałością o każdy detal.
             </p>
             
-            {/* Social media */}
+            {/* Social media - minimal */}
             <div className="flex space-x-4">
               <a 
                 href="#" 
-                className="w-10 h-10 bg-brown-800 rounded-lg flex items-center justify-center hover:bg-brown-700 transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a 
-                href="#" 
-                className="w-10 h-10 bg-brown-800 rounded-lg flex items-center justify-center hover:bg-brown-700 transition-colors"
+                className="w-10 h-10 border border-gray-700 flex items-center justify-center hover:border-white transition-colors"
                 aria-label="Instagram"
               >
-                <Instagram className="w-5 h-5" />
+                <Instagram className="w-4 h-4" />
               </a>
               <a 
                 href="#" 
-                className="w-10 h-10 bg-brown-800 rounded-lg flex items-center justify-center hover:bg-brown-700 transition-colors"
+                className="w-10 h-10 border border-gray-700 flex items-center justify-center hover:border-white transition-colors"
                 aria-label="LinkedIn"
               >
-                <Linkedin className="w-5 h-5" />
+                <Linkedin className="w-4 h-4" />
               </a>
             </div>
           </div>
 
           {/* Quick links */}
           <div>
-            <h3 className="text-lg font-bold mb-6">Szybkie Linki</h3>
-            <ul className="space-y-3">
+            <h3 className="text-lg font-light mb-8 uppercase tracking-wider">Nawigacja</h3>
+            <ul className="space-y-4">
               <li>
                 <Link 
                   href="/" 
-                  className="text-brown-200 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors font-light"
                 >
-                  Strona Główna
+                  Strona główna
                 </Link>
               </li>
               <li>
                 <Link 
                   href="/produkty" 
-                  className="text-brown-200 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors font-light"
                 >
-                  Wszystkie Produkty
+                  Wszystkie produkty
                 </Link>
               </li>
               <li>
                 <Link 
                   href="/o-nas" 
-                  className="text-brown-200 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors font-light"
                 >
-                  O Nas
+                  O nas
                 </Link>
               </li>
               <li>
                 <Link 
                   href="/kontakt" 
-                  className="text-brown-200 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors font-light"
                 >
                   Kontakt
                 </Link>
@@ -91,13 +84,13 @@ export default function Footer() {
 
           {/* Categories */}
           <div>
-            <h3 className="text-lg font-bold mb-6">Kategorie</h3>
-            <ul className="space-y-3">
+            <h3 className="text-lg font-light mb-8 uppercase tracking-wider">Kategorie</h3>
+            <ul className="space-y-4">
               {CATEGORIES.map((category) => (
                 <li key={category.id}>
                   <Link 
                     href={`/produkty/${category.slug}`}
-                    className="text-brown-200 hover:text-white transition-colors"
+                    className="text-gray-400 hover:text-white transition-colors font-light"
                   >
                     {category.name}
                   </Link>
@@ -106,33 +99,33 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contact info */}
+          {/* Contact info - minimal */}
           <div>
-            <h3 className="text-lg font-bold mb-6">Kontakt</h3>
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <MapPin className="w-5 h-5 text-primary-400 mt-0.5 flex-shrink-0" />
-                <div className="text-brown-200">
+            <h3 className="text-lg font-light mb-8 uppercase tracking-wider">Kontakt</h3>
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4">
+                <MapPin className="w-4 h-4 text-gray-400 mt-1 flex-shrink-0" />
+                <div className="text-gray-400 font-light">
                   <div>ul. Przykładowa 123</div>
                   <div>00-000 Warszawa</div>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-primary-400 flex-shrink-0" />
+              <div className="flex items-center space-x-4">
+                <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 <a 
                   href="tel:+48123456789" 
-                  className="text-brown-200 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors font-light"
                 >
                   +48 123 456 789
                 </a>
               </div>
               
-              <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-primary-400 flex-shrink-0" />
+              <div className="flex items-center space-x-4">
+                <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 <a 
                   href="mailto:kontakt@voyager.pl" 
-                  className="text-brown-200 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors font-light"
                 >
                   kontakt@voyager.pl
                 </a>
@@ -141,23 +134,23 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="py-6 border-t border-brown-800">
+        {/* Bottom bar - minimal */}
+        <div className="py-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="text-brown-300 text-sm">
+            <div className="text-gray-400 text-sm font-light">
               © 2024 Voyager. Wszystkie prawa zastrzeżone.
             </div>
             
-            <div className="flex space-x-6 text-sm">
+            <div className="flex space-x-8 text-sm">
               <Link 
                 href="/polityka-prywatnosci" 
-                className="text-brown-300 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors font-light"
               >
-                Polityka Prywatności
+                Polityka prywatności
               </Link>
               <Link 
                 href="/regulamin" 
-                className="text-brown-300 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors font-light"
               >
                 Regulamin
               </Link>

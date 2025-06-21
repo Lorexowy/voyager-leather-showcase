@@ -8,7 +8,7 @@ interface ProductFiltersProps {
   filters: FilterOptions;
   onFiltersChange: (filters: FilterOptions) => void;
   totalProducts: number;
-  hideCategories?: boolean; // Nowy prop do ukrycia filtrów kategorii
+  hideCategories?: boolean;
 }
 
 const availableColors = [
@@ -63,10 +63,8 @@ export default function ProductFilters({
 
   const clearFilters = () => {
     if (hideCategories) {
-      // W kategorii - wyczyść tylko kolory
       onFiltersChange({ colors: undefined });
     } else {
-      // Na stronie wszystkich produktów - wyczyść wszystko
       onFiltersChange({});
     }
   };
@@ -77,79 +75,83 @@ export default function ProductFilters({
 
   return (
     <>
-      {/* Mobile toggle button */}
+      {/* Mobile toggle button - minimal */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden w-full flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-brown-200 mb-6"
+        className="lg:hidden w-full flex items-center justify-between p-4 bg-white border border-gray-200 mb-8 hover:border-gray-900 transition-colors"
       >
-        <div className="flex items-center space-x-2">
-          <Filter className="w-5 h-5 text-brown-600" />
-          <span className="font-medium text-brown-800">Filtry</span>
+        <div className="flex items-center space-x-3">
+          <Filter className="w-4 h-4 text-gray-600" />
+          <span className="font-light text-gray-900 uppercase tracking-wider">Filtry</span>
           {hasActiveFilters && (
-            <span className="w-2 h-2 bg-brown-600 rounded-full"></span>
+            <span className="w-1.5 h-1.5 bg-gray-900 rounded-full"></span>
           )}
         </div>
-        <ChevronDown className={`w-5 h-5 text-brown-600 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      {/* Filters panel */}
-      <div className={`bg-white rounded-lg shadow-sm border border-brown-200 overflow-hidden ${
+      {/* Filters panel - minimal */}
+      <div className={`bg-white border border-gray-200 overflow-hidden ${
         isOpen ? 'block' : 'hidden lg:block'
       }`}>
         {/* Header */}
-        <div className="p-6 border-b border-brown-100">
+        <div className="p-6 border-b border-gray-100">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-brown-900">Filtry</h3>
+            <h3 className="text-lg font-light text-gray-900 uppercase tracking-wider">Filtry</h3>
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="text-sm text-brown-600 hover:text-brown-800 transition-colors"
+                className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-light uppercase tracking-wider"
               >
-                Wyczyść {hideCategories ? 'filtry' : 'wszystkie'}
+                Wyczyść
               </button>
             )}
           </div>
-          <p className="text-sm text-brown-600 mt-1">
+          <p className="text-sm text-gray-500 mt-2 font-light">
             {totalProducts} produktów
           </p>
         </div>
 
-        {/* Category filter - tylko gdy nie są ukryte */}
+        {/* Category filter */}
         {!hideCategories && (
-          <div className="border-b border-brown-100">
+          <div className="border-b border-gray-100">
             <button
               onClick={() => toggleSection('category')}
-              className="w-full flex items-center justify-between p-6 text-left"
+              className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
             >
-              <span className="font-medium text-brown-800">Kategoria</span>
-              <ChevronDown className={`w-4 h-4 text-brown-600 transition-transform ${
+              <span className="font-light text-gray-900 uppercase tracking-wider">Kategoria</span>
+              <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${
                 openSections.has('category') ? 'rotate-180' : ''
               }`} />
             </button>
             
             {openSections.has('category') && (
-              <div className="px-6 pb-6 space-y-3">
-                <label className="flex items-center space-x-3 cursor-pointer">
+              <div className="px-6 pb-6 space-y-4">
+                <label className="flex items-center space-x-3 cursor-pointer group">
                   <input
                     type="radio"
                     name="category"
                     checked={!filters.category}
                     onChange={() => handleCategoryChange(undefined)}
-                    className="w-4 h-4 text-brown-600 border-brown-300 focus:ring-brown-500"
+                    className="w-4 h-4 text-gray-900 border-gray-300 focus:ring-gray-900"
                   />
-                  <span className="text-sm text-brown-700">Wszystkie kategorie</span>
+                  <span className="text-sm text-gray-700 font-light group-hover:text-gray-900 transition-colors">
+                    Wszystkie kategorie
+                  </span>
                 </label>
                 
                 {CATEGORIES.map((category) => (
-                  <label key={category.id} className="flex items-center space-x-3 cursor-pointer">
+                  <label key={category.id} className="flex items-center space-x-3 cursor-pointer group">
                     <input
                       type="radio"
                       name="category"
                       checked={filters.category === category.id}
                       onChange={() => handleCategoryChange(category.id)}
-                      className="w-4 h-4 text-brown-600 border-brown-300 focus:ring-brown-500"
+                      className="w-4 h-4 text-gray-900 border-gray-300 focus:ring-gray-900"
                     />
-                    <span className="text-sm text-brown-700">{category.name}</span>
+                    <span className="text-sm text-gray-700 font-light group-hover:text-gray-900 transition-colors">
+                      {category.name}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -158,28 +160,30 @@ export default function ProductFilters({
         )}
 
         {/* Colors filter */}
-        <div className={`${!hideCategories ? 'border-b border-brown-100' : ''}`}>
+        <div className={`${!hideCategories ? 'border-b border-gray-100' : ''}`}>
           <button
             onClick={() => toggleSection('colors')}
-            className="w-full flex items-center justify-between p-6 text-left"
+            className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
           >
-            <span className="font-medium text-brown-800">Kolory</span>
-            <ChevronDown className={`w-4 h-4 text-brown-600 transition-transform ${
+            <span className="font-light text-gray-900 uppercase tracking-wider">Kolory</span>
+            <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${
               openSections.has('colors') ? 'rotate-180' : ''
             }`} />
           </button>
           
           {openSections.has('colors') && (
-            <div className="px-6 pb-6 space-y-3">
+            <div className="px-6 pb-6 space-y-4">
               {availableColors.map((color) => (
-                <label key={color} className="flex items-center space-x-3 cursor-pointer">
+                <label key={color} className="flex items-center space-x-3 cursor-pointer group">
                   <input
                     type="checkbox"
                     checked={(filters.colors || []).includes(color)}
                     onChange={() => handleColorChange(color)}
-                    className="w-4 h-4 text-brown-600 border-brown-300 rounded focus:ring-brown-500"
+                    className="w-4 h-4 text-gray-900 border-gray-300 focus:ring-gray-900"
                   />
-                  <span className="text-sm text-brown-700">{color}</span>
+                  <span className="text-sm text-gray-700 font-light group-hover:text-gray-900 transition-colors">
+                    {color}
+                  </span>
                 </label>
               ))}
             </div>
@@ -189,14 +193,14 @@ export default function ProductFilters({
         {/* Active filters summary */}
         {hasActiveFilters && (
           <div className="p-6">
-            <h4 className="text-sm font-medium text-brown-800 mb-3">Aktywne filtry:</h4>
+            <h4 className="text-sm font-light text-gray-900 mb-4 uppercase tracking-wider">Aktywne filtry:</h4>
             <div className="flex flex-wrap gap-2">
               {!hideCategories && filters.category && (
-                <span className="inline-flex items-center px-3 py-1 bg-brown-100 text-brown-700 rounded-full text-xs">
+                <span className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 text-xs font-light">
                   {CATEGORIES.find(c => c.id === filters.category)?.name}
                   <button
                     onClick={() => handleCategoryChange(undefined)}
-                    className="ml-2 hover:text-brown-900"
+                    className="ml-2 hover:text-gray-900 transition-colors"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -204,11 +208,11 @@ export default function ProductFilters({
               )}
               
               {filters.colors?.map((color) => (
-                <span key={color} className="inline-flex items-center px-3 py-1 bg-brown-100 text-brown-700 rounded-full text-xs">
+                <span key={color} className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 text-xs font-light">
                   {color}
                   <button
                     onClick={() => handleColorChange(color)}
-                    className="ml-2 hover:text-brown-900"
+                    className="ml-2 hover:text-gray-900 transition-colors"
                   >
                     <X className="w-3 h-3" />
                   </button>

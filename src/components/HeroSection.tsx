@@ -11,18 +11,18 @@ export default function HeroSection() {
           {/* Content - clean typography */}
           <div className="text-center lg:text-left">
             <div className="inline-flex items-center px-4 py-2 bg-gray-50 rounded-full text-sm text-gray-600 mb-8 font-light">
-              Premium Leather Goods
+              Ekskluzywna galanteria skórzana
             </div>
             
             <h1 className="text-6xl lg:text-7xl font-light text-gray-900 mb-8 leading-none tracking-tight">
-              Crafted
-              <span className="block font-light text-gray-600">Leather</span>
-              <span className="block font-medium">Excellence</span>
+              Rzemiosło
+              <span className="block font-light text-gray-600">Skórzane</span>
+              <span className="block font-medium">Doskonałość</span>
             </h1>
             
             <p className="text-xl text-gray-600 mb-12 max-w-lg font-light leading-relaxed">
-              Discover our collection of premium leather products. 
-              Each piece meticulously crafted with attention to every detail.
+              Odkryj naszą kolekcję produktów ze skóry naturalnej najwyższej jakości. 
+              Każdy element wykonany z dbałością o najmniejszy detal.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -30,7 +30,7 @@ export default function HeroSection() {
                 href="/produkty"
                 className="inline-flex items-center justify-center px-8 py-4 bg-gray-900 text-white font-light rounded-sm hover:bg-gray-800 transition-all duration-300 group"
               >
-                <span>Explore Collection</span>
+                <span>Zobacz kolekcję</span>
                 <ArrowRight className="w-4 h-4 ml-3 group-hover:translate-x-1 transition-transform duration-300" />
               </Link>
               
@@ -38,7 +38,7 @@ export default function HeroSection() {
                 href="/kontakt"
                 className="inline-flex items-center justify-center px-8 py-4 border border-gray-300 text-gray-700 font-light rounded-sm hover:border-gray-900 hover:text-gray-900 transition-all duration-300"
               >
-                Get in Touch
+                Skontaktuj się
               </Link>
             </div>
           </div>
@@ -62,19 +62,19 @@ export default function HeroSection() {
         <div className="mt-24 grid grid-cols-2 md:grid-cols-4 gap-12">
           <div className="text-center">
             <div className="text-3xl font-light text-gray-900 mb-2">15+</div>
-            <div className="text-gray-600 text-sm font-light uppercase tracking-wider">Years Experience</div>
+            <div className="text-gray-600 text-sm font-light uppercase tracking-wider">Lat doświadczenia</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-light text-gray-900 mb-2">50+</div>
-            <div className="text-gray-600 text-sm font-light uppercase tracking-wider">Products</div>
+            <div className="text-gray-600 text-sm font-light uppercase tracking-wider">Produktów</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-light text-gray-900 mb-2">100%</div>
-            <div className="text-gray-600 text-sm font-light uppercase tracking-wider">Natural Leather</div>
+            <div className="text-gray-600 text-sm font-light uppercase tracking-wider">Skóra naturalna</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-light text-gray-900 mb-2">24h</div>
-            <div className="text-gray-600 text-sm font-light uppercase tracking-wider">Response Time</div>
+            <div className="text-gray-600 text-sm font-light uppercase tracking-wider">Czas odpowiedzi</div>
           </div>
         </div>
       </div>

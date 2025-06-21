@@ -86,20 +86,20 @@ const stats = [
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-25 to-white">
+    <div className="min-h-screen bg-white">
       <Header />
       
-      {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
+      {/* Hero Section - minimal */}
+      <section className="relative py-24 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h1 className="text-5xl font-serif font-bold text-brown-900 mb-6 leading-tight">
+              <h1 className="text-6xl font-light text-gray-900 mb-8 leading-none tracking-tight">
                 O Firmie
-                <span className="text-brown-600 block">Voyager</span>
+                <span className="text-gray-600 block font-light">Voyager</span>
               </h1>
               
-              <p className="text-lg text-brown-700 mb-8 leading-relaxed">
+              <p className="text-xl text-gray-600 mb-12 leading-relaxed font-light">
                 Od ponad 15 lat tworzymy wyjątkowe produkty ze skóry naturalnej, 
                 łącząc tradycyjne rzemiosło z nowoczesnym designem. Nasza misja to 
                 dostarczanie produktów najwyższej jakości, które służą przez lata.
@@ -108,50 +108,47 @@ export default function AboutPage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link 
                   href="/produkty"
-                  className="inline-flex items-center justify-center px-8 py-4 bg-brown-700 text-white rounded-lg hover:bg-brown-800 transition-all duration-300 group shadow-lg hover:shadow-xl"
+                  className="inline-flex items-center justify-center px-8 py-4 bg-gray-900 text-white font-light hover:bg-gray-800 transition-all duration-300 group uppercase tracking-wider"
                 >
-                  <span className="font-medium">Zobacz nasze produkty</span>
+                  <span>Zobacz nasze produkty</span>
                 </Link>
                 
                 <Link 
                   href="/kontakt"
-                  className="inline-flex items-center justify-center px-8 py-4 border-2 border-brown-700 text-brown-700 rounded-lg hover:bg-brown-700 hover:text-white transition-all duration-300"
+                  className="inline-flex items-center justify-center px-8 py-4 border border-gray-900 text-gray-900 font-light hover:bg-gray-900 hover:text-white transition-all duration-300 uppercase tracking-wider"
                 >
-                  <span className="font-medium">Skontaktuj się z nami</span>
+                  <span>Skontaktuj się z nami</span>
                 </Link>
               </div>
             </div>
             
             <div className="relative">
-              <div className="aspect-square bg-gradient-to-br from-brown-200 to-brown-300 rounded-2xl shadow-2xl relative overflow-hidden">
+              <div className="aspect-[4/5] bg-gray-50 border border-gray-200 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center text-brown-600">
-                    <div className="w-32 h-32 mx-auto mb-4 bg-brown-400/50 rounded-full flex items-center justify-center">
-                      <Award className="w-16 h-16" />
+                  <div className="text-center text-gray-300">
+                    <div className="w-24 h-24 mx-auto mb-6 border border-gray-200 flex items-center justify-center">
+                      <Award className="w-12 h-12" />
                     </div>
-                    <p className="text-lg font-medium">Naszy zespół w pracy</p>
-                    <p className="text-sm opacity-70">Zdjęcie z warsztatów</p>
+                    <p className="text-lg font-light">Naszy zespół w pracy</p>
+                    <p className="text-sm font-light">Zdjęcie z warsztatów</p>
                   </div>
                 </div>
               </div>
-              
-              <div className="absolute -top-6 -left-6 w-24 h-24 bg-primary-300 rounded-2xl rotate-12 opacity-80" />
-              <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-accent-400 rounded-xl -rotate-12 opacity-60" />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-12 bg-brown-900 text-white">
+      {/* Stats Section - minimal */}
+      <section className="py-16 bg-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-primary-400 mb-2">
+                <div className="text-4xl font-light mb-3">
                   {stat.number}
                 </div>
-                <div className="text-brown-200 text-sm md:text-base">
+                <div className="text-gray-400 text-sm font-light uppercase tracking-wider">
                   {stat.label}
                 </div>
               </div>
@@ -160,33 +157,33 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Values Section */}
-      <section className="py-20 bg-white">
+      {/* Values Section - minimal */}
+      <section className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-serif font-bold text-brown-900 mb-4">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl font-light text-gray-900 mb-6 tracking-tight">
               Nasze Wartości
             </h2>
-            <p className="text-lg text-brown-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light">
               To, co wyróżnia nas na rynku i sprawia, że nasze produkty są wyjątkowe.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
             {values.map((value, index) => {
               const Icon = value.icon;
               return (
                 <div 
                   key={index}
-                  className="text-center p-6 rounded-xl bg-primary-50 hover:bg-primary-100 transition-colors duration-300 group"
+                  className="text-center"
                 >
-                  <div className="w-16 h-16 bg-brown-700 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-brown-800 transition-colors">
-                    <Icon className="w-8 h-8 text-white" />
+                  <div className="w-12 h-12 border border-gray-300 flex items-center justify-center mx-auto mb-8">
+                    <Icon className="w-6 h-6 text-gray-600" />
                   </div>
-                  <h3 className="text-xl font-bold text-brown-900 mb-4">
+                  <h3 className="text-xl font-light text-gray-900 mb-4 tracking-tight">
                     {value.title}
                   </h3>
-                  <p className="text-brown-600 leading-relaxed">
+                  <p className="text-gray-600 leading-relaxed font-light">
                     {value.description}
                   </p>
                 </div>
@@ -196,139 +193,126 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Timeline Section */}
-      <section className="py-20 bg-gradient-to-b from-primary-25 to-primary-50">
+      {/* Timeline Section - minimal */}
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-serif font-bold text-brown-900 mb-4">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl font-light text-gray-900 mb-6 tracking-tight">
               Nasza Historia
             </h2>
-            <p className="text-lg text-brown-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light">
               Poznaj kluczowe momenty w rozwoju firmy Voyager.
             </p>
           </div>
 
-          <div className="relative">
-            {/* Timeline line */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 w-1 bg-brown-300 h-full hidden md:block"></div>
-
-            <div className="space-y-12">
-              {timeline.map((item, index) => (
-                <div key={index} className={`flex items-center ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
-                  {/* Content */}
-                  <div className="flex-1 md:px-8">
-                    <div className={`bg-white rounded-lg p-6 shadow-lg ${index % 2 === 0 ? 'md:text-right' : 'md:text-left'}`}>
-                      <div className="text-2xl font-bold text-brown-600 mb-2">{item.year}</div>
-                      <h3 className="text-xl font-bold text-brown-900 mb-3">{item.title}</h3>
-                      <p className="text-brown-700">{item.description}</p>
-                    </div>
-                  </div>
-
-                  {/* Timeline dot */}
-                  <div className="hidden md:flex w-6 h-6 bg-brown-600 rounded-full border-4 border-white shadow-lg z-10 flex-shrink-0"></div>
-
-                  {/* Spacer for opposite side */}
-                  <div className="flex-1 md:px-8 hidden md:block"></div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Team Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-serif font-bold text-brown-900 mb-4">
-              Nasz Zespół
-            </h2>
-            <p className="text-lg text-brown-600 max-w-2xl mx-auto">
-              Poznaj ludzi, którzy każdego dnia pracują nad tworzeniem wyjątkowych produktów.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {team.map((member, index) => (
-              <div key={index} className="text-center group">
-                <div className="relative mb-6">
-                  <div className="aspect-square bg-gradient-to-br from-brown-200 to-brown-300 rounded-2xl shadow-lg relative overflow-hidden group-hover:shadow-xl transition-shadow duration-300">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center text-brown-600">
-                        <div className="w-20 h-20 mx-auto mb-2 bg-brown-400/50 rounded-full flex items-center justify-center">
-                          <Users className="w-10 h-10" />
-                        </div>
-                        <p className="text-sm font-medium">{member.name}</p>
-                      </div>
-                    </div>
+          <div className="space-y-16">
+            {timeline.map((item, index) => (
+              <div key={index} className="flex items-center">
+                <div className="flex-1">
+                  <div className="bg-white border border-gray-200 p-8 hover:border-gray-900 transition-colors">
+                    <div className="text-3xl font-light text-gray-600 mb-3">{item.year}</div>
+                    <h3 className="text-xl font-light text-gray-900 mb-4">{item.title}</h3>
+                    <p className="text-gray-600 font-light">{item.description}</p>
                   </div>
                 </div>
-                
-                <h3 className="text-xl font-bold text-brown-900 mb-2">{member.name}</h3>
-                <div className="text-brown-600 font-medium mb-3">{member.role}</div>
-                <p className="text-brown-700 text-sm leading-relaxed">{member.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* AS Line Section */}
-      <section className="py-20 bg-gradient-to-r from-accent-100 to-accent-200">
+      {/* Team Section - minimal */}
+      <section className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl font-light text-gray-900 mb-6 tracking-tight">
+              Nasz Zespół
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light">
+              Poznaj ludzi, którzy każdego dnia pracują nad tworzeniem wyjątkowych produktów.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-12">
+            {team.map((member, index) => (
+              <div key={index} className="text-center group">
+                <div className="relative mb-8">
+                  <div className="aspect-square bg-gray-100 border border-gray-200 relative overflow-hidden group-hover:border-gray-900 transition-colors">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center text-gray-300">
+                        <div className="w-16 h-16 mx-auto mb-3 border border-gray-200 flex items-center justify-center">
+                          <Users className="w-8 h-8" />
+                        </div>
+                        <p className="text-sm font-light">{member.name}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <h3 className="text-xl font-light text-gray-900 mb-3">{member.name}</h3>
+                <div className="text-gray-600 font-light mb-4 uppercase tracking-wider text-sm">{member.role}</div>
+                <p className="text-gray-600 text-sm leading-relaxed font-light">{member.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* AS Line Section - minimal */}
+      <section className="py-24 bg-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="inline-flex items-center bg-accent-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <div className="inline-flex items-center bg-white/10 text-white px-4 py-2 text-sm font-light mb-8 uppercase tracking-wider">
               <Star className="w-4 h-4 mr-2" />
               Kolekcja Premium
             </div>
             
-            <h2 className="text-4xl font-serif font-bold text-accent-900 mb-6">
+            <h2 className="text-4xl font-light mb-8 tracking-tight">
               AS | Aleksandra Sopel
             </h2>
             
-            <p className="text-lg text-accent-800 max-w-3xl mx-auto mb-8 leading-relaxed">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-12 leading-relaxed font-light">
               Nasza ekskluzywna linia produktów premium, stworzona z najwyższej jakości skóry naturalnej. 
-              Każdy element kolekcji AS to połączenie tradycyjnego rzemiosła z nowoczesnym designem, 
-              przeznaczone dla najbardziej wymagających klientów.
+              Każdy element kolekcji AS to połączenie tradycyjnego rzemiosła z nowoczesnym designem.
             </p>
 
-            <div className="grid md:grid-cols-3 gap-6 mb-12">
-              <div className="bg-white/80 rounded-lg p-6">
-                <Shield className="w-8 h-8 text-accent-600 mx-auto mb-4" />
-                <h3 className="font-bold text-accent-900 mb-2">Gwarancja Jakości</h3>
-                <p className="text-accent-700 text-sm">Dożywotnia gwarancja na wszystkie produkty z linii AS</p>
+            <div className="grid md:grid-cols-3 gap-8 mb-12">
+              <div className="bg-white/5 border border-white/10 p-8">
+                <Shield className="w-8 h-8 mx-auto mb-6" />
+                <h3 className="font-light mb-3 uppercase tracking-wider">Gwarancja Jakości</h3>
+                <p className="text-gray-400 text-sm font-light">Dożywotnia gwarancja na wszystkie produkty z linii AS</p>
               </div>
               
-              <div className="bg-white/80 rounded-lg p-6">
-                <Target className="w-8 h-8 text-accent-600 mx-auto mb-4" />
-                <h3 className="font-bold text-accent-900 mb-2">Precyzja Wykonania</h3>
-                <p className="text-accent-700 text-sm">Każdy szczegół dopracowany do perfekcji</p>
+              <div className="bg-white/5 border border-white/10 p-8">
+                <Target className="w-8 h-8 mx-auto mb-6" />
+                <h3 className="font-light mb-3 uppercase tracking-wider">Precyzja Wykonania</h3>
+                <p className="text-gray-400 text-sm font-light">Każdy szczegół dopracowany do perfekcji</p>
               </div>
               
-              <div className="bg-white/80 rounded-lg p-6">
-                <Star className="w-8 h-8 text-accent-600 mx-auto mb-4" />
-                <h3 className="font-bold text-accent-900 mb-2">Ekskluzywność</h3>
-                <p className="text-accent-700 text-sm">Limitowane serie i unikalne projekty</p>
+              <div className="bg-white/5 border border-white/10 p-8">
+                <Star className="w-8 h-8 mx-auto mb-6" />
+                <h3 className="font-light mb-3 uppercase tracking-wider">Ekskluzywność</h3>
+                <p className="text-gray-400 text-sm font-light">Limitowane serie i unikalne projekty</p>
               </div>
             </div>
 
             <Link 
               href="/produkty/as-aleksandra-sopel"
-              className="inline-flex items-center justify-center px-8 py-4 bg-accent-700 text-white rounded-lg hover:bg-accent-800 transition-all duration-300 group shadow-lg hover:shadow-xl"
+              className="inline-flex items-center justify-center px-8 py-4 bg-white text-gray-900 font-light hover:bg-gray-100 transition-all duration-300 group uppercase tracking-wider"
             >
-              <span className="font-medium">Odkryj kolekcję AS</span>
+              <span>Odkryj kolekcję AS</span>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Contact CTA */}
-      <section className="py-20 bg-brown-900 text-white">
+      {/* Contact CTA - minimal */}
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-serif font-bold mb-4">
+          <h2 className="text-3xl font-light text-gray-900 mb-6 tracking-tight">
             Masz pytania o naszą firmę?
           </h2>
-          <p className="text-brown-200 text-lg mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto font-light">
             Chętnie opowiemy Ci więcej o naszej historii, procesie produkcji i wartościach, 
             którymi się kierujemy.
           </p>
@@ -336,14 +320,14 @@ export default function AboutPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/kontakt"
-              className="inline-flex items-center justify-center px-8 py-4 bg-primary-600 text-brown-900 font-medium rounded-lg hover:bg-primary-500 transition-all duration-300"
+              className="inline-flex items-center justify-center px-8 py-4 bg-gray-900 text-white font-light hover:bg-gray-800 transition-all duration-300 uppercase tracking-wider"
             >
               Skontaktuj się z nami
             </Link>
             
             <Link
               href="/produkty"
-              className="inline-flex items-center justify-center px-8 py-4 border-2 border-primary-400 text-primary-400 font-medium rounded-lg hover:bg-primary-400 hover:text-brown-900 transition-all duration-300"
+              className="inline-flex items-center justify-center px-8 py-4 border border-gray-900 text-gray-900 font-light hover:bg-gray-900 hover:text-white transition-all duration-300 uppercase tracking-wider"
             >
               Zobacz nasze produkty
             </Link>

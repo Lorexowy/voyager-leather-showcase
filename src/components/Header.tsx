@@ -27,7 +27,7 @@ export default function Header() {
           {/* Desktop Navigation - minimalistyczny */}
           <nav className="hidden md:flex items-center space-x-12">
             <Link href="/" className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light">
-              Home
+              Strona główna
             </Link>
             
             {/* Dropdown Products - czysty design */}
@@ -36,7 +36,7 @@ export default function Header() {
                 onClick={toggleProducts}
                 className="flex items-center space-x-1 text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light"
               >
-                <span>Products</span>
+                <span>Produkty</span>
                 <ChevronDown className="w-4 h-4" />
               </button>
               
@@ -58,10 +58,10 @@ export default function Header() {
             </div>
 
             <Link href="/o-nas" className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light">
-              About
+              O nas
             </Link>
             <Link href="/kontakt" className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light">
-              Contact
+              Kontakt
             </Link>
           </nav>
 
@@ -83,11 +83,11 @@ export default function Header() {
                 className="text-gray-700 hover:text-gray-900 transition-colors font-light"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Home
+                Strona główna
               </Link>
               
               <div>
-                <div className="text-gray-900 font-medium mb-4">Products</div>
+                <div className="text-gray-900 font-medium mb-4">Produkty</div>
                 <div className="ml-4 space-y-4">
                   {CATEGORIES.map((category) => (
                     <Link
@@ -107,14 +107,14 @@ export default function Header() {
                 className="text-gray-700 hover:text-gray-900 transition-colors font-light"
                 onClick={() => setIsMenuOpen(false)}
               >
-                About
+                O nas
               </Link>
               <Link 
                 href="/kontakt" 
                 className="text-gray-700 hover:text-gray-900 transition-colors font-light"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Contact
+                Kontakt
               </Link>
             </div>
           </div>

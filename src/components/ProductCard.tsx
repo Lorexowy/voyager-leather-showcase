@@ -14,10 +14,10 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const getCategoryDisplayName = (category: string) => {
     switch (category) {
-      case 'torebki': return 'Bag';
-      case 'plecaki': return 'Backpack';
-      case 'paski': return 'Belt';
-      case 'personalizacja': return 'Custom';
+      case 'torebki': return 'Torebka';
+      case 'plecaki': return 'Plecak';
+      case 'paski': return 'Pasek';
+      case 'personalizacja': return 'Personalizacja';
       case 'as-aleksandra-sopel': return 'AS Premium';
       default: return category;
     }
@@ -103,10 +103,10 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Product details - minimal */}
         <div className="space-y-2 text-xs text-gray-500 mb-8 font-light">
           <div>
-            <span className="uppercase tracking-wider">Size:</span> {product.dimensions}
+            <span className="uppercase tracking-wider">Wymiary:</span> {product.dimensions}
           </div>
           <div>
-            <span className="uppercase tracking-wider">Colors:</span>
+            <span className="uppercase tracking-wider">Kolory:</span>
             <div className="inline-flex gap-1 ml-2">
               {product.availableColors.slice(0, 3).map((color, index) => (
                 <span 
@@ -129,14 +129,14 @@ export default function ProductCard({ product }: ProductCardProps) {
             href={`/produkty/szczegoly/${product.id}`}
             className="flex-1 text-center py-3 border border-gray-200 text-gray-700 text-sm font-light hover:border-gray-900 hover:text-gray-900 transition-all duration-300 uppercase tracking-wider"
           >
-            View Details
+            Zobacz szczegóły
           </Link>
           
           <Link
             href={`/kontakt?product=${product.id}`}
             className="flex-1 text-center py-3 bg-gray-900 text-white text-sm font-light hover:bg-gray-800 transition-all duration-300 group/btn uppercase tracking-wider"
           >
-            <span>Inquire</span>
+            <span>Zapytaj</span>
             <ArrowRight className="w-3 h-3 ml-2 inline group-hover/btn:translate-x-1 transition-transform duration-300" />
           </Link>
         </div>

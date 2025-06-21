@@ -120,34 +120,34 @@ export default function ProductsPage() {
   }, [searchTerm, filters]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-25 to-white">
+    <div className="min-h-screen bg-white">
       <Header />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Page Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-serif font-bold text-brown-900 mb-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {/* Page Header - minimal */}
+        <div className="text-center mb-16">
+          <h1 className="text-5xl font-light text-gray-900 mb-6 tracking-tight">
             Nasze Produkty
           </h1>
-          <p className="text-lg text-brown-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light leading-relaxed">
             Odkryj pełną kolekcję naszych produktów ze skóry naturalnej. 
-            Każdy element wykonany jest z najwyższą starannością i dbałością o detal.
+            Każdy element wykonany z najwyższą starannością.
           </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative max-w-md mx-auto mb-8">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-brown-400" />
+        {/* Search Bar - minimal */}
+        <div className="relative max-w-md mx-auto mb-16">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             placeholder="Szukaj produktów..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-brown-200 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent bg-white"
+            className="w-full pl-12 pr-4 py-4 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light transition-colors"
           />
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-12">
           {/* Filters Sidebar */}
           <div className="lg:w-64 flex-shrink-0">
             <ProductFilters 
@@ -160,23 +160,32 @@ export default function ProductsPage() {
           {/* Products Grid */}
           <div className="flex-1">
             {filteredProducts.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-24 h-24 bg-brown-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="w-12 h-12 text-brown-400" />
+              <div className="text-center py-20">
+                <div className="w-20 h-20 border border-gray-200 flex items-center justify-center mx-auto mb-6">
+                  <Search className="w-10 h-10 text-gray-300" />
                 </div>
-                <h3 className="text-xl font-bold text-brown-900 mb-2">
+                <h3 className="text-xl font-light text-gray-900 mb-3">
                   Nie znaleziono produktów
                 </h3>
-                <p className="text-brown-600">
+                <p className="text-gray-600 font-light mb-8">
                   Spróbuj zmienić kryteria wyszukiwania lub usuń niektóre filtry.
                 </p>
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setFilters({});
+                  }}
+                  className="px-6 py-3 bg-gray-900 text-white font-light hover:bg-gray-800 transition-colors uppercase tracking-wider"
+                >
+                  Wyczyść filtry
+                </button>
               </div>
             ) : (
               <>
                 {/* Results count */}
-                <div className="flex justify-between items-center mb-6">
-                  <div className="text-brown-600">
-                    Znaleziono <span className="font-medium">{filteredProducts.length}</span> produktów
+                <div className="flex justify-between items-center mb-8">
+                  <div className="text-gray-600 font-light">
+                    Znaleziono <span className="font-medium text-gray-900">{filteredProducts.length}</span> produktów
                   </div>
                 </div>
 
@@ -185,6 +194,13 @@ export default function ProductsPage() {
                   {filteredProducts.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
+                </div>
+
+                {/* Bottom spacing */}
+                <div className="mt-16 text-center">
+                  <p className="text-gray-500 text-sm font-light">
+                    Pokazano wszystkie dostępne produkty
+                  </p>
                 </div>
               </>
             )}

@@ -20,25 +20,25 @@ const features = [
   },
   {
     icon: Leaf,
-    title: 'Ekologia',
+    title: 'Odpowiedzialność',
     description: 'Dbamy o środowisko, wykorzystując skóry pochodzące z etycznych źródeł i ekologiczne procesy produkcji.'
   }
 ];
 
 export default function AboutSection() {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Content */}
+        <div className="grid lg:grid-cols-2 gap-20 items-center">
+          {/* Content - clean typography */}
           <div>
-            <h2 className="text-4xl font-serif font-bold text-brown-900 mb-6">
+            <h2 className="text-4xl font-light text-gray-900 mb-8 tracking-tight">
               O Firmie Voyager
             </h2>
             
-            <div className="prose prose-lg text-brown-700 space-y-4">
-              <p>
-                <strong>Voyager</strong> to firma z tradycjami, specjalizująca się w produkcji 
+            <div className="space-y-6 text-gray-600 font-light leading-relaxed">
+              <p className="text-lg">
+                <strong className="font-medium text-gray-900">Voyager</strong> to firma z tradycjami, specjalizująca się w produkcji 
                 wysokiej jakości galanterii skórzanej. Od ponad 15 lat tworzymy produkty, 
                 które łączą w sobie elegancję, funkcjonalność i trwałość.
               </p>
@@ -51,69 +51,65 @@ export default function AboutSection() {
               </p>
               
               <p>
-                Szczególnie dumni jesteśmy z naszej linii premium <strong>"AS | Aleksandra Sopel"</strong>, 
+                Szczególnie dumni jesteśmy z naszej linii premium <strong className="font-medium text-gray-900">"AS | Aleksandra Sopel"</strong>, 
                 która reprezentuje absolutny szczyt jakości i designu w dziedzinie galanterii skórzanej.
               </p>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 mt-10 pt-8 border-t border-brown-100">
+            {/* Stats - minimalistyczne */}
+            <div className="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-gray-200">
               <div className="text-center">
-                <div className="text-2xl font-bold text-brown-800 mb-1">15+</div>
-                <div className="text-sm text-brown-600">Lat na rynku</div>
+                <div className="text-3xl font-light text-gray-900 mb-2">15+</div>
+                <div className="text-sm text-gray-600 font-light uppercase tracking-wider">Lat na rynku</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-brown-800 mb-1">1000+</div>
-                <div className="text-sm text-brown-600">Zadowolonych klientów</div>
+                <div className="text-3xl font-light text-gray-900 mb-2">1000+</div>
+                <div className="text-sm text-gray-600 font-light uppercase tracking-wider">Zadowolonych klientów</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-brown-800 mb-1">50+</div>
-                <div className="text-sm text-brown-600">Produktów w ofercie</div>
+                <div className="text-3xl font-light text-gray-900 mb-2">50+</div>
+                <div className="text-sm text-gray-600 font-light uppercase tracking-wider">Produktów w ofercie</div>
               </div>
             </div>
           </div>
 
-          {/* Image placeholder */}
+          {/* Image placeholder - minimalistyczny */}
           <div className="relative">
-            <div className="aspect-[4/5] bg-gradient-to-br from-brown-200 to-brown-300 rounded-2xl shadow-2xl relative overflow-hidden">
+            <div className="aspect-[4/5] bg-white border border-gray-200 relative overflow-hidden">
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center text-brown-600">
-                  <div className="w-32 h-32 mx-auto mb-4 bg-brown-400/50 rounded-full flex items-center justify-center">
-                    <Award className="w-16 h-16" />
+                <div className="text-center text-gray-300">
+                  <div className="w-24 h-24 mx-auto mb-6 border border-gray-200 flex items-center justify-center">
+                    <Award className="w-12 h-12 text-gray-300" />
                   </div>
-                  <p className="text-lg font-medium">Nasza pracownia</p>
-                  <p className="text-sm opacity-70">Zdjęcie z procesu produkcji</p>
+                  <p className="text-lg font-light text-gray-400">Nasza pracownia</p>
+                  <p className="text-sm text-gray-400 font-light">Zdjęcie z procesu produkcji</p>
                 </div>
               </div>
             </div>
-            
-            {/* Decorative elements */}
-            <div className="absolute -top-6 -left-6 w-24 h-24 bg-primary-300 rounded-2xl rotate-12 opacity-80" />
-            <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-accent-400 rounded-xl -rotate-12 opacity-60" />
           </div>
         </div>
 
-        {/* Features */}
-        <div className="mt-20">
-          <h3 className="text-2xl font-serif font-bold text-brown-900 text-center mb-12">
+        {/* Features - minimalistyczne */}
+        <div className="mt-24">
+          <h3 className="text-2xl font-light text-gray-900 text-center mb-16 tracking-tight">
             Dlaczego warto wybrać Voyager?
           </h3>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <div 
                   key={index}
-                  className="text-center p-6 rounded-xl bg-primary-50 hover:bg-primary-100 transition-colors duration-300"
+                  className="text-center"
                 >
-                  <div className="w-16 h-16 bg-brown-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Icon className="w-8 h-8 text-white" />
+                  <div className="w-12 h-12 border border-gray-300 flex items-center justify-center mx-auto mb-6">
+                    <Icon className="w-6 h-6 text-gray-600" />
                   </div>
-                  <h4 className="text-lg font-bold text-brown-900 mb-3">
+                  <h4 className="text-lg font-light text-gray-900 mb-4 tracking-tight">
                     {feature.title}
                   </h4>
-                  <p className="text-sm text-brown-600 leading-relaxed">
+                  <p className="text-sm text-gray-600 leading-relaxed font-light">
                     {feature.description}
                   </p>
                 </div>
