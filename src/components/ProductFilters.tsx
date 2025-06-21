@@ -78,11 +78,11 @@ export default function ProductFilters({
       {/* Mobile toggle button - minimal */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden w-full flex items-center justify-between p-4 bg-white border border-gray-200 mb-8 hover:border-gray-900 transition-colors"
+        className="lg:hidden w-full flex items-center justify-between p-4 bg-white border border-gray-200 mb-8 hover:border-gray-900 transition-colors font-light"
       >
         <div className="flex items-center space-x-3">
           <Filter className="w-4 h-4 text-gray-600" />
-          <span className="font-light text-gray-900 uppercase tracking-wider">Filtry</span>
+          <span className="text-gray-900 uppercase tracking-wider">Filtry</span>
           {hasActiveFilters && (
             <span className="w-1.5 h-1.5 bg-gray-900 rounded-full"></span>
           )}

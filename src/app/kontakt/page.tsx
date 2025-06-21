@@ -5,34 +5,30 @@ import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ContactForm from '@/components/ContactForm';
-import { MapPin, Phone, Mail, Clock, MessageSquare } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 
 const contactInfo = [
   {
     icon: MapPin,
     title: 'Adres',
-    details: ['ul. Przykładowa 123', '00-000 Warszawa'],
-    action: 'Znajdź nas na mapie'
+    details: ['ul. Przykładowa 123', '00-000 Warszawa']
   },
   {
     icon: Phone,
     title: 'Telefon',
     details: ['+48 123 456 789'],
-    action: 'Zadzwoń do nas',
     href: 'tel:+48123456789'
   },
   {
     icon: Mail,
     title: 'Email',
     details: ['kontakt@voyager.pl'],
-    action: 'Napisz do nas',
     href: 'mailto:kontakt@voyager.pl'
   },
   {
     icon: Clock,
     title: 'Godziny pracy',
-    details: ['Pon - Pt: 8:00 - 17:00', 'Sob: 9:00 - 14:00', 'Niedz: zamknięte'],
-    action: 'Umów spotkanie'
+    details: ['Pon - Pt: 8:00 - 17:00', 'Sob: 9:00 - 14:00', 'Niedz: zamknięte']
   }
 ];
 
@@ -48,121 +44,65 @@ export default function ContactPage() {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-25 to-white">
+    <div className="min-h-screen bg-white">
       <Header />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Page Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-serif font-bold text-brown-900 mb-4">
-            Skontaktuj się z nami
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        {/* Page Header - minimal */}
+        <div className="text-center mb-24">
+          <h1 className="text-5xl font-light text-gray-900 mb-8 tracking-tight">
+            Kontakt
           </h1>
-          <p className="text-lg text-brown-600 max-w-2xl mx-auto">
-            Masz pytania o nasze produkty? Chcesz złożyć zamówienie lub potrzebujesz więcej informacji? 
-            Jesteśmy tutaj, aby Ci pomóc!
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light leading-relaxed">
+            Masz pytania o nasze produkty? Skontaktuj się z nami – 
+            odpowiemy w ciągu 24 godzin.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-12">
-          {/* Contact Information */}
-          <div className="lg:col-span-1 space-y-8">
-            <div>
-              <h2 className="text-2xl font-serif font-bold text-brown-900 mb-6">
-                Informacje kontaktowe
-              </h2>
-              
-              <div className="space-y-6">
-                {contactInfo.map((info, index) => {
-                  const Icon = info.icon;
-                  return (
-                    <div key={index} className="flex items-start space-x-4">
-                      <div className="w-12 h-12 bg-brown-700 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      
-                      <div className="flex-1">
-                        <h3 className="font-medium text-brown-800 mb-2">{info.title}</h3>
-                        <div className="text-sm text-brown-600 space-y-1">
-                          {info.details.map((detail, detailIndex) => (
-                            <div key={detailIndex}>{detail}</div>
-                          ))}
+        <div className="grid lg:grid-cols-5 gap-16">
+          {/* Contact Information - minimal */}
+          <div className="lg:col-span-2 space-y-12">
+            {contactInfo.map((info, index) => {
+              const Icon = info.icon;
+              return (
+                <div key={index} className="flex items-start space-x-6">
+                  <div className="w-12 h-12 border border-gray-300 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-5 h-5 text-gray-600" />
+                  </div>
+                  
+                  <div className="flex-1">
+                    <h3 className="font-light text-gray-900 mb-4 text-lg uppercase tracking-wider">
+                      {info.title}
+                    </h3>
+                    <div className="text-gray-600 space-y-1 font-light">
+                      {info.details.map((detail, detailIndex) => (
+                        <div key={detailIndex}>
+                          {info.href ? (
+                            <a 
+                              href={info.href}
+                              className="hover:text-gray-900 transition-colors"
+                            >
+                              {detail}
+                            </a>
+                          ) : (
+                            detail
+                          )}
                         </div>
-                        {info.href ? (
-                          <a 
-                            href={info.href}
-                            className="inline-block mt-2 text-sm text-brown-700 hover:text-brown-900 font-medium transition-colors"
-                          >
-                            {info.action}
-                          </a>
-                        ) : (
-                          <div className="mt-2 text-sm text-brown-700 font-medium">
-                            {info.action}
-                          </div>
-                        )}
-                      </div>
+                      ))}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Why choose us */}
-            <div className="bg-primary-50 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-brown-900 mb-4">
-                Dlaczego warto z nami współpracować?
-              </h3>
-              <ul className="space-y-3 text-sm text-brown-700">
-                <li className="flex items-start space-x-3">
-                  <MessageSquare className="w-4 h-4 text-brown-600 mt-0.5 flex-shrink-0" />
-                  <span>Odpowiadamy na zapytania w ciągu 24 godzin</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <MessageSquare className="w-4 h-4 text-brown-600 mt-0.5 flex-shrink-0" />
-                  <span>Profesjonalne doradztwo i indywidualne podejście</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <MessageSquare className="w-4 h-4 text-brown-600 mt-0.5 flex-shrink-0" />
-                  <span>Możliwość personalizacji produktów</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <MessageSquare className="w-4 h-4 text-brown-600 mt-0.5 flex-shrink-0" />
-                  <span>Konkurencyjne ceny dla zamówień hurtowych</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Business hours highlight */}
-            <div className="bg-brown-50 border border-brown-200 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-brown-900 mb-2">
-                Godziny obsługi klienta
-              </h3>
-              <p className="text-brown-700 text-sm mb-3">
-                Jesteśmy dostępni telefonicznie i mailowo w następujących godzinach:
-              </p>
-              <div className="text-sm text-brown-600 space-y-1">
-                <div className="flex justify-between">
-                  <span>Poniedziałek - Piątek:</span>
-                  <span className="font-medium">8:00 - 17:00</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span>Sobota:</span>
-                  <span className="font-medium">9:00 - 14:00</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Niedziela:</span>
-                  <span className="font-medium text-red-600">Zamknięte</span>
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
 
-          {/* Contact Form */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-2xl font-serif font-bold text-brown-900 mb-2">
-                Wyślij nam wiadomość
+          {/* Contact Form - minimal */}
+          <div className="lg:col-span-3">
+            <div className="bg-gray-50 p-12">
+              <h2 className="text-2xl font-light text-gray-900 mb-2 tracking-tight">
+                Wyślij wiadomość
               </h2>
-              <p className="text-brown-600 mb-8">
+              <p className="text-gray-600 mb-12 font-light">
                 Wypełnij formularz poniżej, a skontaktujemy się z Tobą w najkrótszym możliwym czasie.
               </p>
               
@@ -171,46 +111,47 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* Map placeholder */}
-        <div className="mt-16">
-          <h2 className="text-2xl font-serif font-bold text-brown-900 mb-8 text-center">
-            Nasza lokalizacja
+        {/* Map section - minimal */}
+        <div className="mt-32">
+          <h2 className="text-3xl font-light text-gray-900 mb-16 text-center tracking-tight">
+            Nasza Lokalizacja
           </h2>
           
-          <div className="bg-gradient-to-br from-brown-100 to-brown-200 rounded-2xl shadow-lg h-96 flex items-center justify-center">
-            <div className="text-center text-brown-600">
-              <MapPin className="w-16 h-16 mx-auto mb-4 text-brown-500" />
-              <h3 className="text-xl font-bold mb-2">Mapa Google</h3>
-              <p className="text-sm opacity-80">Tutaj zostanie umieszczona interaktywna mapa</p>
-              <p className="text-sm opacity-80">ul. Przykładowa 123, 00-000 Warszawa</p>
+          <div className="bg-gray-50 border border-gray-200 h-96 flex items-center justify-center">
+            <div className="text-center text-gray-400">
+              <div className="w-20 h-20 mx-auto mb-6 border border-gray-200 flex items-center justify-center">
+                <MapPin className="w-10 h-10 text-gray-300" />
+              </div>
+              <h3 className="text-xl font-light text-gray-600 mb-2">Interaktywna Mapa</h3>
+              <p className="text-sm font-light text-gray-500">ul. Przykładowa 123, 00-000 Warszawa</p>
             </div>
           </div>
         </div>
 
-        {/* Additional contact options */}
-        <div className="mt-16 bg-brown-900 rounded-2xl p-8 text-white text-center">
-          <h2 className="text-2xl font-serif font-bold mb-4">
+        {/* Bottom CTA - minimal */}
+        <div className="mt-32 text-center bg-gray-900 text-white p-16">
+          <h2 className="text-3xl font-light mb-6 tracking-tight">
             Potrzebujesz natychmiastowej pomocy?
           </h2>
-          <p className="text-brown-200 mb-8 max-w-2xl mx-auto">
+          <p className="text-gray-300 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
             Jeśli masz pilne pytania dotyczące zamówienia lub potrzebujesz szybkiej wyceny, 
-            skontaktuj się z nami bezpośrednio przez telefon.
+            skontaktuj się z nami bezpośrednio.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="tel:+48123456789"
-              className="inline-flex items-center justify-center px-8 py-4 bg-primary-600 text-brown-900 font-medium rounded-lg hover:bg-primary-500 transition-all duration-300"
+              className="inline-flex items-center justify-center px-8 py-4 bg-white text-gray-900 font-light hover:bg-gray-100 transition-all duration-300 uppercase tracking-wider"
             >
-              <Phone className="w-5 h-5 mr-2" />
+              <Phone className="w-4 h-4 mr-3" />
               Zadzwoń teraz
             </a>
             
             <a
               href="mailto:kontakt@voyager.pl"
-              className="inline-flex items-center justify-center px-8 py-4 border-2 border-primary-400 text-primary-400 font-medium rounded-lg hover:bg-primary-400 hover:text-brown-900 transition-all duration-300"
+              className="inline-flex items-center justify-center px-8 py-4 border border-white text-white font-light hover:bg-white hover:text-gray-900 transition-all duration-300 uppercase tracking-wider"
             >
-              <Mail className="w-5 h-5 mr-2" />
+              <Mail className="w-4 h-4 mr-3" />
               Napisz email
             </a>
           </div>

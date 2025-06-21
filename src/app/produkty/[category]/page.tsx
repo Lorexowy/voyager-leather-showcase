@@ -169,17 +169,21 @@ export default function CategoryPage() {
   
   if (!category) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-primary-25 to-white">
+      <div className="min-h-screen bg-white">
         <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center py-16">
-            <h1 className="text-3xl font-bold text-brown-900 mb-4">Kategoria nie znaleziona</h1>
-            <p className="text-brown-600 mb-8">Przepraszamy, taka kategoria nie istnieje.</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="text-center py-20">
+            <h1 className="text-4xl font-light text-gray-900 mb-6 tracking-tight">
+              Kategoria nie znaleziona
+            </h1>
+            <p className="text-gray-600 mb-12 font-light">
+              Przepraszamy, taka kategoria nie istnieje.
+            </p>
             <Link 
               href="/produkty"
-              className="inline-flex items-center px-6 py-3 bg-brown-700 text-white rounded-lg hover:bg-brown-800 transition-colors"
+              className="inline-flex items-center px-8 py-4 bg-gray-900 text-white font-light hover:bg-gray-800 transition-colors uppercase tracking-wider"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4 mr-3" />
               Powrót do produktów
             </Link>
           </div>
@@ -189,20 +193,16 @@ export default function CategoryPage() {
     );
   }
 
-  // Filtruj produkty - najpierw według kategorii, potem według filtrów
+  // Filtruj produkty
   const filteredProducts = useMemo(() => {
-    // Zaczynamy od wszystkich produktów
     let products = mockProducts;
     
-    // Jeśli nie ma filtra kategorii lub jest ustawiony na obecną kategorię, filtruj tylko po kategorii z URL
     if (!filters.category || filters.category === category.id) {
       products = products.filter(product => product.category === category.id);
     } else {
-      // Jeśli użytkownik wybrał inną kategorię w filtrach, pokaż produkty z tej kategorii
       products = products.filter(product => product.category === filters.category);
     }
     
-    // Zastosuj filtry wyszukiwania
     if (searchTerm) {
       products = products.filter(product => 
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -210,7 +210,6 @@ export default function CategoryPage() {
       );
     }
 
-    // Zastosuj filtry kolorów
     if (filters.colors && filters.colors.length > 0) {
       products = products.filter(product => 
         filters.colors!.some(color => product.availableColors.includes(color))
@@ -223,89 +222,78 @@ export default function CategoryPage() {
   const isSpecialCategory = category.id === 'as-aleksandra-sopel';
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-25 to-white">
+    <div className="min-h-screen bg-white">
       <Header />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-brown-600 mb-8">
-          <Link href="/" className="hover:text-brown-800 transition-colors">Strona główna</Link>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        {/* Breadcrumb - minimal */}
+        <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-12 font-light">
+          <Link href="/" className="hover:text-gray-900 transition-colors">Strona główna</Link>
           <span>/</span>
-          <Link href="/produkty" className="hover:text-brown-800 transition-colors">Produkty</Link>
+          <Link href="/produkty" className="hover:text-gray-900 transition-colors">Produkty</Link>
           <span>/</span>
-          <span className="text-brown-800 font-medium">{category.name}</span>
+          <span className="text-gray-900">{category.name}</span>
         </nav>
 
-        {/* Back button */}
+        {/* Back button - minimal */}
         <Link 
           href="/produkty"
-          className="inline-flex items-center space-x-2 text-brown-600 hover:text-brown-800 transition-colors mb-8"
+          className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors mb-16 font-light"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Powrót do wszystkich produktów</span>
         </Link>
 
-        {/* Category Header */}
-        <div className={`relative overflow-hidden rounded-2xl p-8 mb-12 ${
-          isSpecialCategory 
-            ? 'bg-gradient-to-r from-accent-100 to-accent-200 border-2 border-accent-300' 
-            : 'bg-gradient-to-r from-primary-100 to-primary-200'
-        }`}>
-          {/* Special badge for AS line */}
-          {isSpecialCategory && (
-            <div className="absolute top-6 right-6 bg-accent-600 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center">
-              <Crown className="w-4 h-4 mr-2" />
-              Premium Line
-            </div>
-          )}
-          
-          <div className="flex items-center mb-4">
+        {/* Category Header - minimal */}
+        <div className="mb-20">
+          <div className="flex items-center mb-8">
             {isSpecialCategory ? (
-              <Crown className="w-8 h-8 text-accent-700 mr-3" />
+              <Crown className="w-8 h-8 text-gray-600 mr-4" />
             ) : category.id === 'personalizacja' ? (
-              <Sparkles className="w-8 h-8 text-brown-700 mr-3" />
+              <Sparkles className="w-8 h-8 text-gray-600 mr-4" />
             ) : (
-              <div className="w-8 h-8 bg-brown-700 rounded-lg flex items-center justify-center mr-3">
-                <span className="text-white font-bold text-lg">
+              <div className="w-8 h-8 border border-gray-300 flex items-center justify-center mr-4">
+                <span className="text-gray-600 font-light text-lg">
                   {category.name.charAt(0)}
                 </span>
               </div>
             )}
-            <h1 className={`text-3xl font-serif font-bold ${
-              isSpecialCategory ? 'text-accent-900' : 'text-brown-900'
-            }`}>
+            <h1 className="text-5xl font-light text-gray-900 tracking-tight">
               {category.name}
             </h1>
+            {isSpecialCategory && (
+              <span className="ml-6 px-4 py-2 bg-gray-900 text-white text-sm font-light uppercase tracking-wider">
+                Premium
+              </span>
+            )}
           </div>
           
-          <p className={`text-lg leading-relaxed max-w-3xl ${
-            isSpecialCategory ? 'text-accent-800' : 'text-brown-700'
-          }`}>
+          <p className="text-xl text-gray-600 max-w-3xl font-light leading-relaxed">
             {category.description}
           </p>
 
           {isSpecialCategory && (
-            <div className="mt-4 text-accent-700 text-sm">
-              <p className="font-medium">
-                ✨ Kolekcja premium wykonana z najwyższej jakości skóry naturalnej
+            <div className="mt-6 text-gray-600 text-sm font-light">
+              <p>
+                Kolekcja premium wykonana z najwyższej jakości skóry naturalnej
               </p>
             </div>
           )}
         </div>
 
-        {/* Search Bar */}
-        <div className="relative max-w-md mx-auto mb-8">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-brown-400" />
+        {/* Search Bar - minimal */}
+        <div className="relative max-w-md mx-auto mb-20">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             placeholder={`Szukaj w kategorii ${category.name.toLowerCase()}...`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-brown-200 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent bg-white"
+            className="w-full pl-12 pr-4 py-4 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light transition-colors"
           />
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-12">
           {/* Filters Sidebar */}
           <div className="lg:w-64 flex-shrink-0">
             <ProductFilters 
@@ -319,14 +307,14 @@ export default function CategoryPage() {
           {/* Products Grid */}
           <div className="flex-1">
             {filteredProducts.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-24 h-24 bg-brown-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="w-12 h-12 text-brown-400" />
+              <div className="text-center py-20">
+                <div className="w-20 h-20 border border-gray-200 flex items-center justify-center mx-auto mb-8">
+                  <Search className="w-10 h-10 text-gray-300" />
                 </div>
-                <h3 className="text-xl font-bold text-brown-900 mb-2">
+                <h3 className="text-xl font-light text-gray-900 mb-4">
                   Nie znaleziono produktów
                 </h3>
-                <p className="text-brown-600 mb-6">
+                <p className="text-gray-600 mb-8 font-light">
                   Nie mamy produktów pasujących do wybranych kryteriów.
                 </p>
                 <button
@@ -334,17 +322,17 @@ export default function CategoryPage() {
                     setSearchTerm('');
                     setFilters({});
                   }}
-                  className="inline-flex items-center px-6 py-3 bg-brown-700 text-white rounded-lg hover:bg-brown-800 transition-colors"
+                  className="px-8 py-4 bg-gray-900 text-white font-light hover:bg-gray-800 transition-colors uppercase tracking-wider"
                 >
                   Wyczyść filtry
                 </button>
               </div>
             ) : (
               <>
-                {/* Results count */}
-                <div className="flex justify-between items-center mb-6">
-                  <div className="text-brown-600">
-                    <span className="font-medium">{filteredProducts.length}</span> produktów
+                {/* Results count - minimal */}
+                <div className="flex justify-between items-center mb-8">
+                  <div className="text-gray-600 font-light">
+                    Znaleziono <span className="font-medium text-gray-900">{filteredProducts.length}</span> produktów
                     {filters.category && filters.category !== category.id && (
                       <span className="ml-2 text-sm">
                         w kategorii: {CATEGORIES.find(c => c.id === filters.category)?.name}
@@ -360,10 +348,10 @@ export default function CategoryPage() {
                   ))}
                 </div>
 
-                {/* Load more or pagination could go here */}
+                {/* Bottom note */}
                 {filteredProducts.length > 0 && (
-                  <div className="text-center mt-12">
-                    <p className="text-brown-600 text-sm">
+                  <div className="text-center mt-16">
+                    <p className="text-gray-500 text-sm font-light">
                       Pokazano wszystkie dostępne produkty
                     </p>
                   </div>
@@ -373,21 +361,15 @@ export default function CategoryPage() {
           </div>
         </div>
 
-        {/* Category-specific CTA */}
-        <div className={`mt-16 rounded-2xl p-8 text-center ${
-          isSpecialCategory 
-            ? 'bg-accent-900 text-white' 
-            : 'bg-brown-900 text-white'
-        }`}>
-          <h2 className="text-2xl font-serif font-bold mb-4">
+        {/* Category CTA - minimal */}
+        <div className="mt-32 bg-gray-900 text-white p-16 text-center">
+          <h2 className="text-3xl font-light mb-6 tracking-tight">
             {isSpecialCategory 
-              ? 'Zainteresowany kolekcją AS | Aleksandra Sopel?' 
-              : `Nie znalazłeś idealnego produktu w kategorii ${category.name.toLowerCase()}?`
+              ? 'Zainteresowany kolekcją AS?' 
+              : `Nie znalazłeś idealnego produktu?`
             }
           </h2>
-          <p className={`mb-8 max-w-2xl mx-auto ${
-            isSpecialCategory ? 'text-accent-100' : 'text-brown-200'
-          }`}>
+          <p className="text-gray-300 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
             {isSpecialCategory 
               ? 'Skontaktuj się z nami, aby dowiedzieć się więcej o naszej ekskluzywnej linii produktów premium.'
               : 'Skontaktuj się z nami - możemy stworzyć produkt specjalnie dla Ciebie lub pomóc w doborze idealnego rozwiązania.'
@@ -397,22 +379,14 @@ export default function CategoryPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/kontakt"
-              className={`inline-flex items-center justify-center px-8 py-4 font-medium rounded-lg transition-all duration-300 ${
-                isSpecialCategory 
-                  ? 'bg-accent-100 text-accent-900 hover:bg-accent-200' 
-                  : 'bg-primary-600 text-brown-900 hover:bg-primary-500'
-              }`}
+              className="inline-flex items-center justify-center px-8 py-4 bg-white text-gray-900 font-light hover:bg-gray-100 transition-all duration-300 uppercase tracking-wider"
             >
               Skontaktuj się z nami
             </Link>
             
             <Link
               href="/produkty"
-              className={`inline-flex items-center justify-center px-8 py-4 border-2 font-medium rounded-lg transition-all duration-300 ${
-                isSpecialCategory 
-                  ? 'border-accent-400 text-accent-400 hover:bg-accent-400 hover:text-accent-900' 
-                  : 'border-primary-400 text-primary-400 hover:bg-primary-400 hover:text-brown-900'
-              }`}
+              className="inline-flex items-center justify-center px-8 py-4 border border-white text-white font-light hover:bg-white hover:text-gray-900 transition-all duration-300 uppercase tracking-wider"
             >
               Zobacz wszystkie produkty
             </Link>
