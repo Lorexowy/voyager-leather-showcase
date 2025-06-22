@@ -1,12 +1,12 @@
 import { Timestamp } from 'firebase/firestore';
-import { ProductCategory } from '@/types';
+import { ProductCategory, ProductDimensions } from '@/types';
 
 // Firestore document types
 export interface FirestoreProduct {
   id: string;
   name: string;
   description: string;
-  dimensions: string;
+  dimensions?: ProductDimensions; // Zaktualizowane na nowy format
   availableColors: string[];
   category: ProductCategory;
   images: string[];

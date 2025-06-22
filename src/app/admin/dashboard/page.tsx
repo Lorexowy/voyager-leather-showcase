@@ -33,7 +33,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Product, ProductCategory, CATEGORIES } from '@/types';
+import { Product, ProductCategory, CATEGORIES, formatDimensions } from '@/types';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import ContactMessagesPanel from '@/components/ContactMessagesPanel';
 import AdminManagementPanel from '@/components/AdminManagementPanel';
@@ -461,6 +461,9 @@ export default function AdminDashboard() {
                                   </div>
                                   <div className="text-sm text-gray-500 line-clamp-1 font-light">
                                     {product.description.substring(0, 50)}...
+                                  </div>
+                                  <div className="text-xs text-gray-400 font-light mt-1">
+                                    {formatDimensions(product.dimensions)}
                                   </div>
                                 </div>
                               </div>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Eye } from 'lucide-react';
-import { Product } from '@/types';
+import { Product, formatDimensions } from '@/types';
 
 interface ProductCardProps {
   product: Product;
@@ -103,7 +103,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Product details - minimal */}
         <div className="space-y-2 text-xs text-gray-500 mb-8 font-light">
           <div>
-            <span className="uppercase tracking-wider">Wymiary:</span> {product.dimensions}
+            <span className="uppercase tracking-wider">Wymiary:</span> {formatDimensions(product.dimensions)}
           </div>
           <div>
             <span className="uppercase tracking-wider">Kolory:</span>

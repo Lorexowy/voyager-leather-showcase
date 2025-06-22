@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { isUserAdmin } from '@/lib/auth';
+import { getProductById, deleteProduct, toggleProductStatus } from '@/lib/products';
 import { 
   ArrowLeft, 
   Edit, 
@@ -18,41 +22,59 @@ import {
   AlertCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Product, ProductCategory, CATEGORIES } from '@/types';
+import { Product, ProductCategory, CATEGORIES, formatDimensions } from '@/types';
 import ConfirmDialog from '@/components/ConfirmDialog';
-
-// Mock data - później zastąpimy danymi z Firebase
-const mockProduct: Product = {
-  id: '1',
-  name: 'Elegancka Torebka Damska Premium',
-  description: 'Wyjątkowa torebka wykonana ze skóry naturalnej najwyższej jakości. Charakteryzuje się eleganckim designem i funkcjonalnością, idealna na każdą okazję. Wykonana ręcznie przez doświadczonych rzemieślników z dbałością o każdy detal. Skóra pochodząca z etycznych źródeł, poddana specjalnej obróbce zapewniającej trwałość i miękkość.',
-  category: 'torebki' as ProductCategory,
-  mainImage: '/placeholder-bag.jpg',
-  images: ['/placeholder-bag.jpg', '/placeholder-bag-2.jpg', '/placeholder-bag-3.jpg', '/placeholder-bag-4.jpg'],
-  availableColors: ['Czarny', 'Brązowy', 'Beżowy', 'Bordowy'],
-  dimensions: '30x25x12 cm',
-  createdAt: new Date('2024-01-15'),
-  updatedAt: new Date('2024-01-20'),
-  isActive: true
-};
 
 export default function AdminViewProductPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const router = useRouter();
   const params = useParams();
 
+  // Sprawdź autoryzację
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        const adminStatus = await isUserAdmin(currentUser);
+        if (adminStatus) {
+          setIsAuthorized(true);
+        } else {
+          toast.error('Brak uprawnień administratora');
+          router.push('/admin/login');
+        }
+      } else {
+        router.push('/admin/login');
+      }
+      setIsCheckingAuth(false);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
   // Load product data
   useEffect(() => {
     const loadProduct = async () => {
+      if (!isAuthorized) return;
+      
+      const productId = params.id as string;
+      setIsLoading(true);
+      
       try {
-        // Tutaj będzie pobieranie z Firebase
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Symulacja ładowania
-        setProduct(mockProduct);
+        const productData = await getProductById(productId);
+        
+        if (productData) {
+          setProduct(productData);
+        } else {
+          toast.error('Produkt nie znaleziony');
+          router.push('/admin/dashboard');
+        }
       } catch (error) {
+        console.error('Error loading product:', error);
         toast.error('Nie udało się załadować danych produktu');
         router.push('/admin/dashboard');
       } finally {
@@ -61,42 +83,35 @@ export default function AdminViewProductPage() {
     };
 
     loadProduct();
-  }, [params.id, router]);
+  }, [params.id, router, isAuthorized]);
 
   const handleDeleteProduct = async () => {
+    if (!product) return;
+
     setIsDeleting(true);
 
     try {
-      // Tutaj będzie logika usuwania z Firebase
-      console.log('Deleting product:', params.id);
-      
-      // Symulacja usuwania
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await deleteProduct(product.id);
       toast.success('Produkt został usunięty pomyślnie!');
       router.push('/admin/dashboard');
-    } catch (error) {
-      toast.error('Wystąpił błąd podczas usuwania produktu');
+    } catch (error: any) {
+      console.error('Error deleting product:', error);
+      toast.error(error.message || 'Wystąpił błąd podczas usuwania produktu');
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const toggleProductStatus = async () => {
+  const handleToggleProductStatus = async () => {
     if (!product) return;
 
     try {
-      // Tutaj będzie logika zmiany statusu w Firebase
-      const newStatus = !product.isActive;
-      console.log('Toggle product status:', product.id, newStatus);
-      
-      // Symulacja aktualizacji
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      const newStatus = await toggleProductStatus(product.id);
       setProduct(prev => prev ? { ...prev, isActive: newStatus } : null);
       toast.success(`Produkt ${newStatus ? 'aktywowany' : 'deaktywowany'}`);
-    } catch (error) {
-      toast.error('Wystąpił błąd podczas zmiany statusu produktu');
+    } catch (error: any) {
+      console.error('Error toggling product status:', error);
+      toast.error(error.message || 'Wystąpił błąd podczas zmiany statusu produktu');
     }
   };
 
@@ -104,12 +119,28 @@ export default function AdminViewProductPage() {
     return CATEGORIES.find(cat => cat.id === categoryId)?.name || categoryId;
   };
 
+  // Loading state during auth check
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600 font-light">Sprawdzanie uprawnień...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return null; // Redirect in progress
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-brown-600 mx-auto mb-4" />
-          <p className="text-gray-600">Ładowanie danych produktu...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-gray-600 mx-auto mb-4" />
+          <p className="text-gray-600 font-light">Ładowanie danych produktu...</p>
         </div>
       </div>
     );
@@ -120,11 +151,11 @@ export default function AdminViewProductPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Produkt nie znaleziony</h1>
-          <p className="text-gray-600 mb-6">Nie udało się znaleźć produktu o podanym ID.</p>
+          <h1 className="text-xl font-light text-gray-900 mb-2">Produkt nie znaleziony</h1>
+          <p className="text-gray-600 mb-6 font-light">Nie udało się znaleźć produktu o podanym ID.</p>
           <Link
             href="/admin/dashboard"
-            className="inline-flex items-center px-4 py-2 bg-brown-700 text-white rounded-lg hover:bg-brown-800 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-gray-900 text-white font-light hover:bg-gray-800 transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Powrót do dashboardu
@@ -143,20 +174,20 @@ export default function AdminViewProductPage() {
             <div className="flex items-center space-x-4">
               <Link 
                 href="/admin/dashboard"
-                className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors font-light"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Powrót do dashboardu
               </Link>
               <div className="h-6 border-l border-gray-300"></div>
-              <h1 className="text-lg font-medium text-gray-900">Podgląd produktu</h1>
+              <h1 className="text-lg font-light text-gray-900">Podgląd produktu</h1>
             </div>
 
             <div className="flex items-center space-x-3">
               <Link
                 href={`/produkty/szczegoly/${product.id}`}
                 target="_blank"
-                className="inline-flex items-center px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center px-3 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-light"
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Zobacz na stronie
@@ -164,7 +195,7 @@ export default function AdminViewProductPage() {
               
               <Link
                 href={`/admin/products/edit/${product.id}`}
-                className="inline-flex items-center px-3 py-2 text-sm bg-brown-700 text-white rounded-lg hover:bg-brown-800 transition-colors"
+                className="inline-flex items-center px-3 py-2 text-sm bg-gray-900 text-white hover:bg-gray-800 transition-colors font-light"
               >
                 <Edit className="w-4 h-4 mr-2" />
                 Edytuj
@@ -172,7 +203,7 @@ export default function AdminViewProductPage() {
               
               <button
                 onClick={() => setShowDeleteDialog(true)}
-                className="inline-flex items-center px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                className="inline-flex items-center px-3 py-2 text-sm bg-red-600 text-white hover:bg-red-700 transition-colors font-light"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Usuń
@@ -187,10 +218,10 @@ export default function AdminViewProductPage() {
           {/* Product Images */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-6">Zdjęcia produktu</h2>
+              <h2 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Zdjęcia produktu</h2>
               
               {/* Main Image */}
-              <div className="aspect-square bg-gray-100 rounded-lg mb-4 relative overflow-hidden">
+              <div className="aspect-square bg-gray-100 mb-4 relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center text-gray-500">
                     <Package className="w-16 h-16 mx-auto mb-2" />
@@ -207,9 +238,9 @@ export default function AdminViewProductPage() {
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`aspect-square bg-gray-100 rounded-lg border-2 transition-all ${
+                      className={`aspect-square bg-gray-100 border-2 transition-all ${
                         currentImageIndex === index 
-                          ? 'border-brown-500' 
+                          ? 'border-gray-900' 
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -230,14 +261,14 @@ export default function AdminViewProductPage() {
             {/* Basic Info */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-medium text-gray-900">Informacje podstawowe</h2>
+                <h2 className="text-lg font-light text-gray-900 tracking-tight">Informacje podstawowe</h2>
                 <button
-                  onClick={toggleProductStatus}
-                  className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${
+                  onClick={handleToggleProductStatus}
+                  className={`inline-flex items-center px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
                     product.isActive 
                       ? 'bg-green-100 text-green-800 hover:bg-green-200' 
                       : 'bg-red-100 text-red-800 hover:bg-red-200'
-                  } transition-colors cursor-pointer`}
+                  }`}
                 >
                   {product.isActive ? (
                     <>
@@ -255,18 +286,18 @@ export default function AdminViewProductPage() {
 
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">{product.name}</h3>
-                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                  <h3 className="text-lg font-light text-gray-900 mb-2">{product.name}</h3>
+                  <span className={`inline-flex px-2 py-1 text-xs font-medium ${
                     product.category === 'as-aleksandra-sopel' 
-                      ? 'bg-accent-100 text-accent-800' 
-                      : 'bg-brown-100 text-brown-800'
+                      ? 'bg-gray-900 text-white' 
+                      : 'bg-gray-100 text-gray-800'
                   }`}>
                     {getCategoryName(product.category)}
                   </span>
                 </div>
 
                 <div>
-                  <p className="text-sm text-gray-600 leading-relaxed">
+                  <p className="text-sm text-gray-600 leading-relaxed font-light">
                     {product.description}
                   </p>
                 </div>
@@ -275,7 +306,7 @@ export default function AdminViewProductPage() {
 
             {/* Product Specifications */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Specyfikacja</h2>
+              <h2 className="text-lg font-light text-gray-900 mb-4 tracking-tight">Specyfikacja</h2>
               
               <div className="space-y-4">
                 {/* Dimensions */}
@@ -283,7 +314,7 @@ export default function AdminViewProductPage() {
                   <Ruler className="w-5 h-5 text-gray-400 mt-0.5" />
                   <div>
                     <h4 className="text-sm font-medium text-gray-900">Wymiary</h4>
-                    <p className="text-sm text-gray-600">{product.dimensions}</p>
+                    <p className="text-sm text-gray-600 font-light">{formatDimensions(product.dimensions)}</p>
                   </div>
                 </div>
 
@@ -296,7 +327,7 @@ export default function AdminViewProductPage() {
                       {product.availableColors.map((color, index) => (
                         <span 
                           key={index}
-                          className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
+                          className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-light"
                         >
                           {color}
                         </span>
@@ -310,7 +341,7 @@ export default function AdminViewProductPage() {
                   <Package className="w-5 h-5 text-gray-400 mt-0.5" />
                   <div>
                     <h4 className="text-sm font-medium text-gray-900">Zdjęcia</h4>
-                    <p className="text-sm text-gray-600">{product.images.length} zdjęć</p>
+                    <p className="text-sm text-gray-600 font-light">{product.images.length} zdjęć</p>
                   </div>
                 </div>
               </div>
@@ -318,13 +349,13 @@ export default function AdminViewProductPage() {
 
             {/* Dates */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Historia</h2>
+              <h2 className="text-lg font-light text-gray-900 mb-4 tracking-tight">Historia</h2>
               
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Calendar className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">Utworzono</span>
+                    <span className="text-sm text-gray-600 font-light">Utworzono</span>
                   </div>
                   <span className="text-sm font-medium text-gray-900">
                     {product.createdAt.toLocaleDateString('pl-PL')}
@@ -334,7 +365,7 @@ export default function AdminViewProductPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Calendar className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">Ostatnia aktualizacja</span>
+                    <span className="text-sm text-gray-600 font-light">Ostatnia aktualizacja</span>
                   </div>
                   <span className="text-sm font-medium text-gray-900">
                     {product.updatedAt.toLocaleDateString('pl-PL')}
@@ -345,12 +376,12 @@ export default function AdminViewProductPage() {
 
             {/* Quick Actions */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Szybkie akcje</h2>
+              <h2 className="text-lg font-light text-gray-900 mb-4 tracking-tight">Szybkie akcje</h2>
               
               <div className="space-y-3">
                 <Link
                   href={`/admin/products/edit/${product.id}`}
-                  className="w-full inline-flex items-center justify-center px-4 py-2 bg-brown-700 text-white rounded-lg hover:bg-brown-800 transition-colors"
+                  className="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 transition-colors font-light"
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   Edytuj produkt
@@ -359,15 +390,15 @@ export default function AdminViewProductPage() {
                 <Link
                   href={`/produkty/szczegoly/${product.id}`}
                   target="_blank"
-                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-light"
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Zobacz na stronie
                 </Link>
                 
                 <button
-                  onClick={toggleProductStatus}
-                  className={`w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
+                  onClick={handleToggleProductStatus}
+                  className={`w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 transition-colors font-light ${
                     product.isActive
                       ? 'text-red-700 hover:bg-red-50 hover:border-red-300'
                       : 'text-green-700 hover:bg-green-50 hover:border-green-300'

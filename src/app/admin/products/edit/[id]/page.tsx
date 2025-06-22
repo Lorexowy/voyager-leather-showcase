@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm, useFieldArray } from 'react-hook-form';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { isUserAdmin } from '@/lib/auth';
+import { getProductById, updateProduct } from '@/lib/products';
 import { 
   ArrowLeft, 
   Upload, 
@@ -17,38 +21,31 @@ import {
   Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { ProductCategory, CATEGORIES, Product } from '@/types';
+import { ProductCategory, CATEGORIES, Product, ProductDimensions } from '@/types';
 
 interface ProductForm {
   name: string;
   description: string;
   category: ProductCategory;
-  dimensions: string;
+  // Wymiary jako osobne pola
+  dimensionsEnabled: boolean;
+  width: string;
+  height: string;
+  depth: string;
+  length: string;
+  dimensionUnit: 'cm' | 'mm';
   availableColors: { value: string }[];
   isActive: boolean;
 }
 
-// Mock data - później zastąpimy danymi z Firebase
-const mockProduct: Product = {
-  id: '1',
-  name: 'Elegancka Torebka Damska',
-  description: 'Klasyczna torebka wykonana ze skóry naturalnej najwyższej jakości. Idealna na każdą okazję, łączy w sobie elegancję z funkcjonalnością.',
-  category: 'torebki' as ProductCategory,
-  mainImage: '/placeholder-bag.jpg',
-  images: ['/placeholder-bag.jpg', '/placeholder-bag-2.jpg', '/placeholder-bag-3.jpg'],
-  availableColors: ['Czarny', 'Brązowy', 'Beżowy'],
-  dimensions: '30x25x12 cm',
-  createdAt: new Date('2024-01-15'),
-  updatedAt: new Date('2024-01-20'),
-  isActive: true
-};
-
 export default function EditProductPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [productImages, setProductImages] = useState<string[]>([]);
-  const [mainImageIndex, setMainImageIndex] = useState(0);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoadingProduct, setIsLoadingProduct] = useState(true);
   const [product, setProduct] = useState<Product | null>(null);
+  const [productImages, setProductImages] = useState<string[]>([]);
+  const [mainImageIndex, setMainImageIndex] = useState(0);
   const router = useRouter();
   const params = useParams();
 
@@ -64,7 +61,12 @@ export default function EditProductPage() {
       name: '',
       description: '',
       category: 'torebki',
-      dimensions: '',
+      dimensionsEnabled: false,
+      width: '',
+      height: '',
+      depth: '',
+      length: '',
+      dimensionUnit: 'cm',
       availableColors: [{ value: '' }],
       isActive: true
     },
@@ -77,29 +79,70 @@ export default function EditProductPage() {
   });
 
   const watchedCategory = watch('category');
+  const watchedDimensionsEnabled = watch('dimensionsEnabled');
+
+  // Sprawdź autoryzację
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        const adminStatus = await isUserAdmin(currentUser);
+        if (adminStatus) {
+          setIsAuthorized(true);
+        } else {
+          toast.error('Brak uprawnień administratora');
+          router.push('/admin/login');
+        }
+      } else {
+        router.push('/admin/login');
+      }
+      setIsCheckingAuth(false);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   // Load product data
   useEffect(() => {
     const loadProduct = async () => {
+      if (!isAuthorized) return;
+      
+      const productId = params.id as string;
+      setIsLoadingProduct(true);
+      
       try {
-        // Tutaj będzie pobieranie z Firebase
-        const productData = mockProduct; // Symulacja danych
+        const productData = await getProductById(productId);
         
-        setProduct(productData);
-        setProductImages(productData.images);
-        setMainImageIndex(productData.images.indexOf(productData.mainImage));
-        
-        // Wypełnij formularz danymi produktu
-        setValue('name', productData.name);
-        setValue('description', productData.description);
-        setValue('category', productData.category);
-        setValue('dimensions', productData.dimensions);
-        setValue('isActive', productData.isActive);
-        
-        // Wypełnij kolory
-        replace(productData.availableColors.map(color => ({ value: color })));
-        
+        if (productData) {
+          setProduct(productData);
+          setProductImages(productData.images);
+          setMainImageIndex(productData.images.indexOf(productData.mainImage));
+          
+          // Wypełnij formularz danymi produktu
+          setValue('name', productData.name);
+          setValue('description', productData.description);
+          setValue('category', productData.category);
+          setValue('isActive', productData.isActive);
+          
+          // Obsługa wymiarów
+          if (productData.dimensions) {
+            setValue('dimensionsEnabled', true);
+            setValue('dimensionUnit', productData.dimensions.unit || 'cm');
+            setValue('width', productData.dimensions.width?.toString() || '');
+            setValue('height', productData.dimensions.height?.toString() || '');
+            setValue('depth', productData.dimensions.depth?.toString() || '');
+            setValue('length', productData.dimensions.length?.toString() || '');
+          } else {
+            setValue('dimensionsEnabled', false);
+          }
+          
+          // Wypełnij kolory
+          replace(productData.availableColors.map(color => ({ value: color })));
+        } else {
+          toast.error('Produkt nie znaleziony');
+          router.push('/admin/dashboard');
+        }
       } catch (error) {
+        console.error('Error loading product:', error);
         toast.error('Nie udało się załadować danych produktu');
         router.push('/admin/dashboard');
       } finally {
@@ -108,7 +151,7 @@ export default function EditProductPage() {
     };
 
     loadProduct();
-  }, [params.id, setValue, replace, router]);
+  }, [params.id, setValue, replace, router, isAuthorized]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -142,29 +185,55 @@ export default function EditProductPage() {
       return;
     }
 
+    // Sprawdź czy jest przynajmniej jeden kolor
+    const validColors = data.availableColors.map(color => color.value).filter(Boolean);
+    if (validColors.length === 0) {
+      toast.error('Dodaj przynajmniej jeden kolor produktu');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // Tutaj będzie logika aktualizacji w Firebase
+      // Przygotuj wymiary (opcjonalne)
+      let dimensions: ProductDimensions | undefined = undefined;
+      
+      if (data.dimensionsEnabled) {
+        const width = data.width ? parseFloat(data.width) : undefined;
+        const height = data.height ? parseFloat(data.height) : undefined;
+        const depth = data.depth ? parseFloat(data.depth) : undefined;
+        const length = data.length ? parseFloat(data.length) : undefined;
+
+        // Sprawdź czy przynajmniej jeden wymiar został podany
+        if (width || height || depth || length) {
+          dimensions = {
+            width,
+            height,
+            depth,
+            length,
+            unit: data.dimensionUnit
+          };
+        }
+      }
+
       const updatedProductData = {
-        ...data,
-        id: params.id,
-        availableColors: data.availableColors.map(color => color.value).filter(Boolean),
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        dimensions: dimensions,
+        availableColors: validColors,
         images: productImages,
         mainImage: productImages[mainImageIndex],
-        updatedAt: new Date(),
-        createdAt: product?.createdAt || new Date()
+        isActive: data.isActive
       };
 
-      console.log('Updated product data:', updatedProductData);
-      
-      // Symulacja zapisywania
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await updateProduct(params.id as string, updatedProductData);
       
       toast.success('Produkt został zaktualizowany pomyślnie!');
       router.push('/admin/dashboard');
-    } catch (error) {
-      toast.error('Wystąpił błąd podczas aktualizacji produktu');
+    } catch (error: any) {
+      console.error('Error updating product:', error);
+      toast.error(error.message || 'Wystąpił błąd podczas aktualizacji produktu');
     } finally {
       setIsLoading(false);
     }
@@ -178,11 +247,8 @@ export default function EditProductPage() {
     setIsLoading(true);
 
     try {
-      // Tutaj będzie logika usuwania z Firebase
-      console.log('Deleting product:', params.id);
-      
-      // Symulacja usuwania
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Tutaj będzie logika usuwania z Firebase - zaimportuj deleteProduct
+      // await deleteProduct(params.id as string);
       
       toast.success('Produkt został usunięty pomyślnie!');
       router.push('/admin/dashboard');
@@ -193,12 +259,29 @@ export default function EditProductPage() {
     }
   };
 
+  // Loading state during auth check
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600 font-light">Sprawdzanie uprawnień...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return null; // Redirect in progress
+  }
+
+  // Loading product state
   if (isLoadingProduct) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-brown-600 mx-auto mb-4" />
-          <p className="text-gray-600">Ładowanie danych produktu...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-gray-600 mx-auto mb-4" />
+          <p className="text-gray-600 font-light">Ładowanie danych produktu...</p>
         </div>
       </div>
     );
@@ -209,11 +292,11 @@ export default function EditProductPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Produkt nie znaleziony</h1>
-          <p className="text-gray-600 mb-6">Nie udało się znaleźć produktu o podanym ID.</p>
+          <h1 className="text-xl font-light text-gray-900 mb-2">Produkt nie znaleziony</h1>
+          <p className="text-gray-600 mb-6 font-light">Nie udało się znaleźć produktu o podanym ID.</p>
           <Link
             href="/admin/dashboard"
-            className="inline-flex items-center px-4 py-2 bg-brown-700 text-white rounded-lg hover:bg-brown-800 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-gray-900 text-white font-light hover:bg-gray-800 transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Powrót do dashboardu
@@ -232,20 +315,20 @@ export default function EditProductPage() {
             <div className="flex items-center space-x-4">
               <Link 
                 href="/admin/dashboard"
-                className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors font-light"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Powrót do dashboardu
               </Link>
               <div className="h-6 border-l border-gray-300"></div>
-              <h1 className="text-lg font-medium text-gray-900">Edytuj produkt</h1>
+              <h1 className="text-lg font-light text-gray-900">Edytuj produkt</h1>
             </div>
 
             <div className="flex items-center space-x-3">
               <Link
                 href={`/produkty/szczegoly/${product.id}`}
                 target="_blank"
-                className="inline-flex items-center px-3 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center px-3 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-light"
               >
                 <Eye className="w-4 h-4 mr-2" />
                 Zobacz produkt
@@ -254,7 +337,7 @@ export default function EditProductPage() {
               <button
                 onClick={handleDeleteProduct}
                 disabled={isLoading}
-                className="inline-flex items-center px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="inline-flex items-center px-3 py-2 text-sm bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 font-light"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Usuń produkt
@@ -266,16 +349,16 @@ export default function EditProductPage() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Product Info Header */}
-        <div className="bg-brown-50 rounded-lg p-4 mb-8 border border-brown-200">
+        <div className="bg-gray-50 border border-gray-200 p-4 mb-8">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-brown-200 to-brown-300 rounded-lg flex items-center justify-center">
-              <span className="text-brown-700 font-bold text-lg">
+            <div className="w-12 h-12 bg-gray-200 flex items-center justify-center">
+              <span className="text-gray-700 font-light text-lg">
                 {product.name.charAt(0)}
               </span>
             </div>
             <div>
-              <h2 className="text-lg font-medium text-brown-900">{product.name}</h2>
-              <p className="text-sm text-brown-600">
+              <h2 className="text-lg font-light text-gray-900">{product.name}</h2>
+              <p className="text-sm text-gray-600 font-light">
                 Utworzono: {product.createdAt.toLocaleDateString('pl-PL')} | 
                 Ostatnia aktualizacja: {product.updatedAt.toLocaleDateString('pl-PL')}
               </p>
@@ -286,12 +369,12 @@ export default function EditProductPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           {/* Basic Information */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-6">Podstawowe informacje</h3>
+            <h3 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Podstawowe informacje</h3>
             
             <div className="grid md:grid-cols-2 gap-6">
               {/* Product Name */}
               <div className="md:col-span-2">
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="name" className="block text-sm font-light text-gray-900 mb-3 uppercase tracking-wider">
                   Nazwa produktu <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -304,14 +387,14 @@ export default function EditProductPage() {
                       message: 'Nazwa musi mieć co najmniej 3 znaki'
                     }
                   })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent ${
-                    errors.name ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border focus:outline-none bg-white font-light transition-colors ${
+                    errors.name ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-gray-900'
                   }`}
                   placeholder="Np. Elegancka Torebka Damska"
                 />
                 {errors.name && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
+                  <p className="mt-2 text-sm text-red-600 flex items-center font-light">
+                    <AlertCircle className="w-4 h-4 mr-2" />
                     {errors.name.message}
                   </p>
                 )}
@@ -319,13 +402,13 @@ export default function EditProductPage() {
 
               {/* Category */}
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="category" className="block text-sm font-light text-gray-900 mb-3 uppercase tracking-wider">
                   Kategoria <span className="text-red-500">*</span>
                 </label>
                 <select
                   id="category"
                   {...register('category', { required: 'Kategoria jest wymagana' })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light transition-colors"
                 >
                   {CATEGORIES.map((category) => (
                     <option key={category.id} value={category.id}>
@@ -335,31 +418,9 @@ export default function EditProductPage() {
                 </select>
               </div>
 
-              {/* Dimensions */}
-              <div>
-                <label htmlFor="dimensions" className="block text-sm font-medium text-gray-700 mb-2">
-                  Wymiary <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="dimensions"
-                  {...register('dimensions', { required: 'Wymiary są wymagane' })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent ${
-                    errors.dimensions ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="Np. 30x25x12 cm"
-                />
-                {errors.dimensions && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    {errors.dimensions.message}
-                  </p>
-                )}
-              </div>
-
               {/* Description */}
               <div className="md:col-span-2">
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="description" className="block text-sm font-light text-gray-900 mb-3 uppercase tracking-wider">
                   Opis produktu <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -372,14 +433,14 @@ export default function EditProductPage() {
                       message: 'Opis musi mieć co najmniej 20 znaków'
                     }
                   })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent resize-none ${
-                    errors.description ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border focus:outline-none bg-white resize-none font-light transition-colors ${
+                    errors.description ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-gray-900'
                   }`}
                   placeholder="Opisz produkt szczegółowo..."
                 />
                 {errors.description && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
+                  <p className="mt-2 text-sm text-red-600 flex items-center font-light">
+                    <AlertCircle className="w-4 h-4 mr-2" />
                     {errors.description.message}
                   </p>
                 )}
@@ -387,9 +448,124 @@ export default function EditProductPage() {
             </div>
           </div>
 
+          {/* Dimensions - Updated section */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Wymiary produktu</h3>
+            
+            {/* Enable dimensions checkbox */}
+            <div className="mb-6">
+              <label className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  {...register('dimensionsEnabled')}
+                  className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900"
+                />
+                <span className="text-sm text-gray-700 font-light">
+                  Dodaj informacje o wymiarach
+                </span>
+              </label>
+            </div>
+
+            {/* Dimensions fields */}
+            {watchedDimensionsEnabled && (
+              <div className="space-y-4">
+                {/* Unit selection */}
+                <div className="mb-4">
+                  <label className="block text-sm font-light text-gray-900 mb-2 uppercase tracking-wider">
+                    Jednostka
+                  </label>
+                  <select
+                    {...register('dimensionUnit')}
+                    className="px-3 py-2 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light"
+                  >
+                    <option value="cm">Centymetry (cm)</option>
+                    <option value="mm">Milimetry (mm)</option>
+                  </select>
+                </div>
+
+                {/* Different fields based on category */}
+                {watchedCategory === 'paski' ? (
+                  // Dla pasków: długość x szerokość
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-light text-gray-700 mb-2">
+                        Długość
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        {...register('length')}
+                        className="w-full px-3 py-2 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light"
+                        placeholder="np. 110"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-light text-gray-700 mb-2">
+                        Szerokość
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        {...register('width')}
+                        className="w-full px-3 py-2 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light"
+                        placeholder="np. 3.5"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  // Dla innych produktów: szerokość x wysokość x głębokość
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-light text-gray-700 mb-2">
+                        Szerokość
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        {...register('width')}
+                        className="w-full px-3 py-2 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light"
+                        placeholder="np. 30"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-light text-gray-700 mb-2">
+                        Wysokość
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        {...register('height')}
+                        className="w-full px-3 py-2 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light"
+                        placeholder="np. 25"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-light text-gray-700 mb-2">
+                        Głębokość
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        {...register('depth')}
+                        className="w-full px-3 py-2 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light"
+                        placeholder="np. 12"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-xs text-gray-500 font-light">
+                  Podaj wymiary produktu. Możesz wypełnić tylko te pola, które są istotne dla danego produktu.
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Available Colors */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-6">Dostępne kolory</h3>
+            <h3 className="text-lg font-light text-gray-900 mb-6 tracking-tight">
+              Dostępne kolory <span className="text-red-500">*</span>
+            </h3>
             
             <div className="space-y-3">
               {fields.map((field, index) => (
@@ -399,7 +575,11 @@ export default function EditProductPage() {
                     {...register(`availableColors.${index}.value` as const, {
                       required: index === 0 ? 'Co najmniej jeden kolor jest wymagany' : false
                     })}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                    className={`flex-1 px-4 py-3 border focus:outline-none bg-white font-light transition-colors ${
+                      errors.availableColors?.[index]?.value 
+                        ? 'border-red-300 focus:border-red-500' 
+                        : 'border-gray-200 focus:border-gray-900'
+                    }`}
                     placeholder="Np. Czarny, Brązowy, Beżowy..."
                   />
                   {fields.length > 1 && (
@@ -414,12 +594,19 @@ export default function EditProductPage() {
                 </div>
               ))}
               
+              {errors.availableColors?.[0]?.value && (
+                <p className="text-sm text-red-600 flex items-center font-light">
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  {errors.availableColors[0].value.message}
+                </p>
+              )}
+              
               <button
                 type="button"
                 onClick={() => append({ value: '' })}
-                className="inline-flex items-center px-3 py-2 text-sm text-brown-600 hover:text-brown-800 transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors font-light border border-gray-200 hover:border-gray-900"
               >
-                <Plus className="w-4 h-4 mr-1" />
+                <Plus className="w-4 h-4 mr-2" />
                 Dodaj kolor
               </button>
             </div>
@@ -427,16 +614,16 @@ export default function EditProductPage() {
 
           {/* Images */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-6">Zdjęcia produktu</h3>
+            <h3 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Zdjęcia produktu</h3>
             
             {/* Current Images */}
             {productImages.length > 0 && (
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-sm font-medium text-gray-900">
+                  <h4 className="text-sm font-light text-gray-900 uppercase tracking-wider">
                     Obecne zdjęcia ({productImages.length})
                   </h4>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 font-light">
                     Kliknij na zdjęcie, aby ustawić jako główne
                   </p>
                 </div>
@@ -445,8 +632,8 @@ export default function EditProductPage() {
                   {productImages.map((image, index) => (
                     <div 
                       key={index}
-                      className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
-                        mainImageIndex === index ? 'border-brown-500' : 'border-transparent hover:border-gray-300'
+                      className={`relative aspect-square bg-gray-100 border-2 cursor-pointer transition-all ${
+                        mainImageIndex === index ? 'border-gray-900' : 'border-gray-200 hover:border-gray-300'
                       }`}
                       onClick={() => setMainImageIndex(index)}
                     >
@@ -456,7 +643,7 @@ export default function EditProductPage() {
                       
                       {/* Main image badge */}
                       {mainImageIndex === index && (
-                        <div className="absolute top-2 left-2 bg-brown-600 text-white text-xs px-2 py-1 rounded">
+                        <div className="absolute top-2 left-2 bg-gray-900 text-white text-xs px-2 py-1 font-light uppercase tracking-wider">
                           Główne
                         </div>
                       )}
@@ -468,7 +655,7 @@ export default function EditProductPage() {
                           e.stopPropagation();
                           removeImage(index);
                         }}
-                        className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                        className="absolute top-2 right-2 p-1 bg-red-600 text-white hover:bg-red-700 transition-colors"
                         disabled={productImages.length <= 1}
                       >
                         <X className="w-3 h-3" />
@@ -482,12 +669,12 @@ export default function EditProductPage() {
             {/* Upload Area */}
             <div>
               <label className="block w-full">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-brown-400 transition-colors cursor-pointer">
+                <div className="border-2 border-dashed border-gray-300 p-8 text-center hover:border-gray-400 transition-colors cursor-pointer">
                   <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium text-brown-600">Kliknij aby dodać więcej zdjęć</span> lub przeciągnij je tutaj
+                  <div className="text-sm text-gray-600 font-light">
+                    <span className="font-medium text-gray-900">Kliknij aby dodać więcej zdjęć</span> lub przeciągnij je tutaj
                   </div>
-                  <div className="text-xs text-gray-500 mt-2">
+                  <div className="text-xs text-gray-500 mt-2 font-light">
                     PNG, JPG, JPEG do 5MB każde
                   </div>
                 </div>
@@ -504,16 +691,16 @@ export default function EditProductPage() {
 
           {/* Settings */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-6">Ustawienia</h3>
+            <h3 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Ustawienia</h3>
             
             <div className="flex items-center space-x-3">
               <input
                 type="checkbox"
                 id="isActive"
                 {...register('isActive')}
-                className="w-4 h-4 text-brown-600 border-gray-300 rounded focus:ring-brown-500"
+                className="w-4 h-4 text-gray-900 border-gray-300 focus:ring-gray-900"
               />
-              <label htmlFor="isActive" className="text-sm text-gray-700">
+              <label htmlFor="isActive" className="text-sm text-gray-700 font-light">
                 Produkt aktywny (widoczny dla klientów)
               </label>
             </div>
@@ -523,7 +710,7 @@ export default function EditProductPage() {
           <div className="flex items-center justify-between">
             <Link
               href="/admin/dashboard"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-light"
             >
               Anuluj zmiany
             </Link>
@@ -532,7 +719,7 @@ export default function EditProductPage() {
               <Link
                 href={`/produkty/szczegoly/${product.id}`}
                 target="_blank"
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-light"
               >
                 <Eye className="w-4 h-4 mr-2" />
                 Podgląd
@@ -541,9 +728,9 @@ export default function EditProductPage() {
               <button
                 type="submit"
                 disabled={!isValid || isLoading || productImages.length === 0}
-                className={`inline-flex items-center px-6 py-2 font-medium rounded-lg transition-all ${
+                className={`inline-flex items-center px-6 py-2 font-light transition-all ${
                   isValid && !isLoading && productImages.length > 0
-                    ? 'bg-brown-700 text-white hover:bg-brown-800'
+                    ? 'bg-gray-900 text-white hover:bg-gray-800'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >

@@ -20,13 +20,19 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { ProductCategory, CATEGORIES } from '@/types';
+import { ProductCategory, CATEGORIES, ProductDimensions } from '@/types';
 
 interface ProductForm {
   name: string;
   description: string;
   category: ProductCategory;
-  dimensions: string;
+  // Wymiary jako osobne pola
+  dimensionsEnabled: boolean;
+  width: string;
+  height: string;
+  depth: string;
+  length: string;
+  dimensionUnit: 'cm' | 'mm';
   availableColors: { value: string }[];
   isActive: boolean;
 }
@@ -50,7 +56,12 @@ export default function AddProductPage() {
       name: '',
       description: '',
       category: 'torebki',
-      dimensions: '',
+      dimensionsEnabled: false,
+      width: '',
+      height: '',
+      depth: '',
+      length: '',
+      dimensionUnit: 'cm',
       availableColors: [{ value: '' }],
       isActive: true
     },
@@ -63,6 +74,7 @@ export default function AddProductPage() {
   });
 
   const watchedCategory = watch('category');
+  const watchedDimensionsEnabled = watch('dimensionsEnabled');
 
   // Sprawdź autoryzację
   useEffect(() => {
@@ -110,15 +122,43 @@ export default function AddProductPage() {
       return;
     }
 
+    // Sprawdź czy jest przynajmniej jeden kolor
+    const validColors = data.availableColors.map(color => color.value).filter(Boolean);
+    if (validColors.length === 0) {
+      toast.error('Dodaj przynajmniej jeden kolor produktu');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
+      // Przygotuj wymiary (opcjonalne)
+      let dimensions: ProductDimensions | undefined = undefined;
+      
+      if (data.dimensionsEnabled) {
+        const width = data.width ? parseFloat(data.width) : undefined;
+        const height = data.height ? parseFloat(data.height) : undefined;
+        const depth = data.depth ? parseFloat(data.depth) : undefined;
+        const length = data.length ? parseFloat(data.length) : undefined;
+
+        // Sprawdź czy przynajmniej jeden wymiar został podany
+        if (width || height || depth || length) {
+          dimensions = {
+            width,
+            height,
+            depth,
+            length,
+            unit: data.dimensionUnit
+          };
+        }
+      }
+
       const productData = {
         name: data.name,
         description: data.description,
         category: data.category,
-        dimensions: data.dimensions,
-        availableColors: data.availableColors.map(color => color.value).filter(Boolean),
+        dimensions: dimensions,
+        availableColors: validColors,
         images: uploadedImages,
         mainImage: uploadedImages[mainImageIndex],
         isActive: data.isActive
@@ -226,28 +266,6 @@ export default function AddProductPage() {
                 </select>
               </div>
 
-              {/* Dimensions */}
-              <div>
-                <label htmlFor="dimensions" className="block text-sm font-light text-gray-900 mb-3 uppercase tracking-wider">
-                  Wymiary <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="dimensions"
-                  {...register('dimensions', { required: 'Wymiary są wymagane' })}
-                  className={`w-full px-4 py-3 border focus:outline-none bg-white font-light transition-colors ${
-                    errors.dimensions ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-gray-900'
-                  }`}
-                  placeholder="Np. 30x25x12 cm"
-                />
-                {errors.dimensions && (
-                  <p className="mt-2 text-sm text-red-600 flex items-center font-light">
-                    <AlertCircle className="w-4 h-4 mr-2" />
-                    {errors.dimensions.message}
-                  </p>
-                )}
-              </div>
-
               {/* Description */}
               <div className="md:col-span-2">
                 <label htmlFor="description" className="block text-sm font-light text-gray-900 mb-3 uppercase tracking-wider">
@@ -278,9 +296,124 @@ export default function AddProductPage() {
             </div>
           </div>
 
+          {/* Dimensions - Nowa sekcja */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Wymiary produktu</h2>
+            
+            {/* Enable dimensions checkbox */}
+            <div className="mb-6">
+              <label className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  {...register('dimensionsEnabled')}
+                  className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900"
+                />
+                <span className="text-sm text-gray-700 font-light">
+                  Dodaj informacje o wymiarach
+                </span>
+              </label>
+            </div>
+
+            {/* Dimensions fields */}
+            {watchedDimensionsEnabled && (
+              <div className="space-y-4">
+                {/* Unit selection */}
+                <div className="mb-4">
+                  <label className="block text-sm font-light text-gray-900 mb-2 uppercase tracking-wider">
+                    Jednostka
+                  </label>
+                  <select
+                    {...register('dimensionUnit')}
+                    className="px-3 py-2 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light"
+                  >
+                    <option value="cm">Centymetry (cm)</option>
+                    <option value="mm">Milimetry (mm)</option>
+                  </select>
+                </div>
+
+                {/* Different fields based on category */}
+                {watchedCategory === 'paski' ? (
+                  // Dla pasków: długość x szerokość
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-light text-gray-700 mb-2">
+                        Długość
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        {...register('length')}
+                        className="w-full px-3 py-2 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light"
+                        placeholder="np. 110"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-light text-gray-700 mb-2">
+                        Szerokość
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        {...register('width')}
+                        className="w-full px-3 py-2 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light"
+                        placeholder="np. 3.5"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  // Dla innych produktów: szerokość x wysokość x głębokość
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-light text-gray-700 mb-2">
+                        Szerokość
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        {...register('width')}
+                        className="w-full px-3 py-2 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light"
+                        placeholder="np. 30"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-light text-gray-700 mb-2">
+                        Wysokość
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        {...register('height')}
+                        className="w-full px-3 py-2 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light"
+                        placeholder="np. 25"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-light text-gray-700 mb-2">
+                        Głębokość
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        {...register('depth')}
+                        className="w-full px-3 py-2 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light"
+                        placeholder="np. 12"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-xs text-gray-500 font-light">
+                  Podaj wymiary produktu. Możesz wypełnić tylko te pola, które są istotne dla danego produktu.
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Available Colors */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Dostępne kolory</h2>
+            <h2 className="text-lg font-light text-gray-900 mb-6 tracking-tight">
+              Dostępne kolory <span className="text-red-500">*</span>
+            </h2>
             
             <div className="space-y-3">
               {fields.map((field, index) => (
@@ -290,7 +423,11 @@ export default function AddProductPage() {
                     {...register(`availableColors.${index}.value` as const, {
                       required: index === 0 ? 'Co najmniej jeden kolor jest wymagany' : false
                     })}
-                    className="flex-1 px-4 py-3 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light transition-colors"
+                    className={`flex-1 px-4 py-3 border focus:outline-none bg-white font-light transition-colors ${
+                      errors.availableColors?.[index]?.value 
+                        ? 'border-red-300 focus:border-red-500' 
+                        : 'border-gray-200 focus:border-gray-900'
+                    }`}
                     placeholder="Np. Czarny, Brązowy, Beżowy..."
                   />
                   {fields.length > 1 && (
@@ -305,6 +442,13 @@ export default function AddProductPage() {
                 </div>
               ))}
               
+              {errors.availableColors?.[0]?.value && (
+                <p className="text-sm text-red-600 flex items-center font-light">
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  {errors.availableColors[0].value.message}
+                </p>
+              )}
+              
               <button
                 type="button"
                 onClick={() => append({ value: '' })}
@@ -318,7 +462,9 @@ export default function AddProductPage() {
 
           {/* Images */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Zdjęcia produktu</h2>
+            <h2 className="text-lg font-light text-gray-900 mb-6 tracking-tight">
+              Zdjęcia produktu <span className="text-red-500">*</span>
+            </h2>
             
             {/* Upload Area */}
             <div className="mb-6">
