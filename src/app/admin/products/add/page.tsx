@@ -9,6 +9,13 @@ import { auth } from '@/lib/firebase';
 import { isUserAdmin } from '@/lib/auth';
 import { addProduct } from '@/lib/products';
 import { 
+  uploadMultipleImages, 
+  deleteMultipleImages, 
+  createPreviewUrl, 
+  revokePreviewUrl,
+  UploadProgress 
+} from '@/lib/storage';
+import { 
   ArrowLeft, 
   Upload, 
   X, 
@@ -17,7 +24,9 @@ import {
   Eye,
   AlertCircle,
   Loader2,
-  Image as ImageIcon
+  Image as ImageIcon,
+  CheckCircle,
+  AlertTriangle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ProductCategory, CATEGORIES, ProductDimensions } from '@/types';
@@ -26,7 +35,6 @@ interface ProductForm {
   name: string;
   description: string;
   category: ProductCategory;
-  // Wymiary jako osobne pola
   dimensionsEnabled: boolean;
   width: string;
   height: string;
@@ -37,12 +45,22 @@ interface ProductForm {
   isActive: boolean;
 }
 
+interface UploadedImage {
+  file: File;
+  previewUrl: string;
+  uploadedUrl?: string;
+  isUploading: boolean;
+  progress: number;
+  error?: string;
+}
+
 export default function AddProductPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [mainImageIndex, setMainImageIndex] = useState(0);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
   const router = useRouter();
 
   const {
@@ -96,33 +114,126 @@ export default function AddProductPage() {
     return () => unsubscribe();
   }, [router]);
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Cleanup preview URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      uploadedImages.forEach(img => {
+        if (img.previewUrl) {
+          revokePreviewUrl(img.previewUrl);
+        }
+      });
+    };
+  }, []);
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (files) {
-      // Tutaj będzie logika uploadowania do Firebase Storage
-      // Na razie symulujemy dodanie placeholder'ów
-      const newImages = Array.from(files).map((file, index) => 
-        `/placeholder-upload-${uploadedImages.length + index}.jpg`
+    if (!files || files.length === 0) return;
+
+    const newImages: UploadedImage[] = Array.from(files).map(file => ({
+      file,
+      previewUrl: createPreviewUrl(file),
+      isUploading: true,
+      progress: 0
+    }));
+
+    setUploadedImages(prev => [...prev, ...newImages]);
+    setIsUploadingImages(true);
+
+    try {
+      // Upload wszystkich obrazów
+      const filesToUpload = Array.from(files);
+      
+      await uploadMultipleImages(
+        filesToUpload,
+        (fileIndex, progress) => {
+          // Update progress dla konkretnego pliku
+          setUploadedImages(prev => {
+            const updated = [...prev];
+            const targetIndex = prev.length - files.length + fileIndex;
+            if (updated[targetIndex]) {
+              updated[targetIndex] = {
+                ...updated[targetIndex],
+                progress: progress.progress,
+                isUploading: !progress.isComplete,
+                uploadedUrl: progress.url,
+                error: progress.error
+              };
+            }
+            return updated;
+          });
+        },
+        (results) => {
+          // Wszystkie pliki zakończone
+          console.log('Upload results:', results);
+          setIsUploadingImages(false);
+          
+          const successCount = results.filter(r => r.url).length;
+          const errorCount = results.filter(r => r.error).length;
+          
+          if (successCount > 0) {
+            toast.success(`Dodano ${successCount} zdjęć pomyślnie!`);
+          }
+          if (errorCount > 0) {
+            toast.error(`${errorCount} zdjęć nie udało się dodać`);
+          }
+        }
       );
-      setUploadedImages(prev => [...prev, ...newImages]);
-      toast.success(`Dodano ${files.length} zdjęć`);
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast.error('Wystąpił błąd podczas upload\'u zdjęć');
+      setIsUploadingImages(false);
     }
+
+    // Reset input
+    event.target.value = '';
   };
 
-  const removeImage = (index: number) => {
+  const removeImage = async (index: number) => {
+    const imageToRemove = uploadedImages[index];
+    
+    // Usuń z Firebase Storage jeśli został upload'owany
+    if (imageToRemove.uploadedUrl) {
+      try {
+        await deleteMultipleImages([imageToRemove.uploadedUrl]);
+      } catch (error) {
+        console.error('Error deleting image:', error);
+      }
+    }
+
+    // Zwolnij preview URL
+    if (imageToRemove.previewUrl) {
+      revokePreviewUrl(imageToRemove.previewUrl);
+    }
+
+    // Usuń z listy
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
+    
+    // Adjust main image index
     if (mainImageIndex >= index && mainImageIndex > 0) {
       setMainImageIndex(mainImageIndex - 1);
+    } else if (mainImageIndex === index && uploadedImages.length > 1) {
+      setMainImageIndex(0);
     }
   };
 
   const onSubmit = async (data: ProductForm) => {
     console.log('🔍 Debug - Form data submitted:', data);
     console.log('🔍 Debug - Uploaded images:', uploadedImages);
-    console.log('🔍 Debug - Current user:', auth.currentUser?.email);
 
-    if (uploadedImages.length === 0) {
+    // Sprawdź czy wszystkie obrazy zostały upload'owane
+    const uploadedUrls = uploadedImages
+      .filter(img => img.uploadedUrl && !img.error)
+      .map(img => img.uploadedUrl!);
+
+    if (uploadedUrls.length === 0) {
       toast.error('Dodaj co najmniej jedno zdjęcie produktu');
+      return;
+    }
+
+    // Sprawdź czy są obrazy w trakcie upload'u
+    const stillUploading = uploadedImages.some(img => img.isUploading);
+    if (stillUploading) {
+      toast.error('Poczekaj aż wszystkie zdjęcia zostaną dodane');
       return;
     }
 
@@ -136,7 +247,7 @@ export default function AddProductPage() {
     setIsLoading(true);
 
     try {
-      // Przygotuj wymiary - tylko jeśli checkbox zaznaczony i są wartości
+      // Przygotuj wymiary
       let dimensions: ProductDimensions | undefined = undefined;
       
       if (data.dimensionsEnabled) {
@@ -145,13 +256,8 @@ export default function AddProductPage() {
         const depth = data.depth ? parseFloat(data.depth) : undefined;
         const length = data.length ? parseFloat(data.length) : undefined;
 
-        // Sprawdź czy przynajmniej jeden wymiar został podany
         if (width || height || depth || length) {
-          dimensions = {
-            unit: data.dimensionUnit
-          };
-          
-          // Dodaj tylko niepuste wymiary (bez undefined)
+          dimensions = { unit: data.dimensionUnit };
           if (width !== undefined) dimensions.width = width;
           if (height !== undefined) dimensions.height = height;
           if (depth !== undefined) dimensions.depth = depth;
@@ -159,18 +265,17 @@ export default function AddProductPage() {
         }
       }
 
-      // Przygotuj dane produktu - bez undefined values
+      // Przygotuj dane produktu
       const productData: any = {
         name: data.name,
         description: data.description,
         category: data.category,
         availableColors: validColors,
-        images: uploadedImages,
-        mainImage: uploadedImages[mainImageIndex],
+        images: uploadedUrls,
+        mainImage: uploadedUrls[mainImageIndex] || uploadedUrls[0],
         isActive: data.isActive
       };
 
-      // Dodaj dimensions tylko jeśli istnieją
       if (dimensions) {
         productData.dimensions = dimensions;
       }
@@ -189,6 +294,19 @@ export default function AddProductPage() {
     }
   };
 
+  const getImageStatus = (image: UploadedImage) => {
+    if (image.error) {
+      return { icon: AlertTriangle, color: 'text-red-500', text: 'Błąd' };
+    }
+    if (image.isUploading) {
+      return { icon: Loader2, color: 'text-blue-500', text: `${Math.round(image.progress)}%` };
+    }
+    if (image.uploadedUrl) {
+      return { icon: CheckCircle, color: 'text-green-500', text: 'Gotowe' };
+    }
+    return { icon: Upload, color: 'text-gray-400', text: 'Oczekuje' };
+  };
+
   // Loading state podczas sprawdzania autoryzacji
   if (isCheckingAuth) {
     return (
@@ -202,8 +320,11 @@ export default function AddProductPage() {
   }
 
   if (!isAuthorized) {
-    return null; // Przekierowanie w toku
+    return null;
   }
+
+  const validUploadedImages = uploadedImages.filter(img => img.uploadedUrl && !img.error);
+  const canSubmit = isValid && !isLoading && !isUploadingImages && validUploadedImages.length > 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -313,7 +434,6 @@ export default function AddProductPage() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Wymiary produktu</h2>
             
-            {/* Enable dimensions checkbox */}
             <div className="mb-6">
               <label className="flex items-center space-x-3">
                 <input
@@ -327,10 +447,8 @@ export default function AddProductPage() {
               </label>
             </div>
 
-            {/* Dimensions fields */}
             {watchedDimensionsEnabled && (
               <div className="space-y-4">
-                {/* Unit selection */}
                 <div className="mb-4">
                   <label className="block text-sm font-light text-gray-900 mb-2 uppercase tracking-wider">
                     Jednostka
@@ -344,14 +462,10 @@ export default function AddProductPage() {
                   </select>
                 </div>
 
-                {/* Different fields based on category */}
                 {watchedCategory === 'paski' ? (
-                  // Dla pasków: długość x szerokość
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-light text-gray-700 mb-2">
-                        Długość
-                      </label>
+                      <label className="block text-sm font-light text-gray-700 mb-2">Długość</label>
                       <input
                         type="number"
                         step="0.1"
@@ -361,9 +475,7 @@ export default function AddProductPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-light text-gray-700 mb-2">
-                        Szerokość
-                      </label>
+                      <label className="block text-sm font-light text-gray-700 mb-2">Szerokość</label>
                       <input
                         type="number"
                         step="0.1"
@@ -374,12 +486,9 @@ export default function AddProductPage() {
                     </div>
                   </div>
                 ) : (
-                  // Dla innych produktów: szerokość x wysokość x głębokość
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-light text-gray-700 mb-2">
-                        Szerokość
-                      </label>
+                      <label className="block text-sm font-light text-gray-700 mb-2">Szerokość</label>
                       <input
                         type="number"
                         step="0.1"
@@ -389,9 +498,7 @@ export default function AddProductPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-light text-gray-700 mb-2">
-                        Wysokość
-                      </label>
+                      <label className="block text-sm font-light text-gray-700 mb-2">Wysokość</label>
                       <input
                         type="number"
                         step="0.1"
@@ -401,9 +508,7 @@ export default function AddProductPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-light text-gray-700 mb-2">
-                        Głębokość
-                      </label>
+                      <label className="block text-sm font-light text-gray-700 mb-2">Głębokość</label>
                       <input
                         type="number"
                         step="0.1"
@@ -482,13 +587,27 @@ export default function AddProductPage() {
             {/* Upload Area */}
             <div className="mb-6">
               <label className="block w-full">
-                <div className="border-2 border-dashed border-gray-200 p-12 text-center hover:border-gray-900 transition-colors cursor-pointer bg-gray-50">
-                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <div className={`border-2 border-dashed p-12 text-center transition-colors cursor-pointer ${
+                  isUploadingImages 
+                    ? 'border-blue-300 bg-blue-50' 
+                    : 'border-gray-200 bg-gray-50 hover:border-gray-900'
+                }`}>
+                  {isUploadingImages ? (
+                    <Loader2 className="w-12 h-12 text-blue-500 mx-auto mb-4 animate-spin" />
+                  ) : (
+                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  )}
                   <div className="text-sm text-gray-600 font-light">
-                    <span className="font-medium text-gray-900">Kliknij aby dodać zdjęcia</span> lub przeciągnij je tutaj
+                    {isUploadingImages ? (
+                      <span className="text-blue-600">Dodawanie zdjęć...</span>
+                    ) : (
+                      <>
+                        <span className="font-medium text-gray-900">Kliknij aby dodać zdjęcia</span> lub przeciągnij je tutaj
+                      </>
+                    )}
                   </div>
                   <div className="text-xs text-gray-500 mt-2 font-light">
-                    PNG, JPG, JPEG do 5MB każde
+                    PNG, JPG, JPEG do 10MB każde (automatycznie kompresowane)
                   </div>
                 </div>
                 <input
@@ -497,59 +616,139 @@ export default function AddProductPage() {
                   accept="image/*"
                   onChange={handleImageUpload}
                   className="hidden"
+                  disabled={isUploadingImages}
                 />
               </label>
             </div>
+
+            {/* Upload Progress & Status */}
+            {isUploadingImages && (
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-900">Dodawanie zdjęć...</p>
+                    <p className="text-xs text-blue-700">Zdjęcia są kompresowane i upload'owane do Firebase Storage</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Uploaded Images */}
             {uploadedImages.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-light text-gray-900 uppercase tracking-wider">
-                    Dodane zdjęcia ({uploadedImages.length})
+                    Zdjęcia ({uploadedImages.length})
                   </h3>
                   <p className="text-xs text-gray-500 font-light">
                     Kliknij na zdjęcie, aby ustawić jako główne
                   </p>
                 </div>
                 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {uploadedImages.map((image, index) => (
-                    <div 
-                      key={index}
-                      className={`relative aspect-square bg-gray-50 border-2 cursor-pointer transition-all ${
-                        mainImageIndex === index ? 'border-gray-900' : 'border-gray-200 hover:border-gray-400'
-                      }`}
-                      onClick={() => setMainImageIndex(index)}
-                    >
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center text-gray-400">
-                          <ImageIcon className="w-8 h-8 mx-auto mb-2" />
-                          <p className="text-xs font-light">Zdjęcie {index + 1}</p>
-                        </div>
-                      </div>
-                      
-                      {/* Main image badge */}
-                      {mainImageIndex === index && (
-                        <div className="absolute top-2 left-2 bg-gray-900 text-white text-xs px-2 py-1 font-light uppercase tracking-wider">
-                          Główne
-                        </div>
-                      )}
-                      
-                      {/* Remove button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeImage(index);
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {uploadedImages.map((image, index) => {
+                    const status = getImageStatus(image);
+                    const StatusIcon = status.icon;
+                    
+                    return (
+                      <div 
+                        key={index}
+                        className={`relative aspect-square border-2 cursor-pointer transition-all ${
+                          mainImageIndex === index && image.uploadedUrl 
+                            ? 'border-gray-900' 
+                            : 'border-gray-200 hover:border-gray-400'
+                        } ${!image.uploadedUrl ? 'cursor-default' : ''}`}
+                        onClick={() => {
+                          if (image.uploadedUrl && !image.error) {
+                            setMainImageIndex(index);
+                          }
                         }}
-                        className="absolute top-2 right-2 p-1 bg-red-600 text-white hover:bg-red-700 transition-colors"
                       >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
+                        {/* Image Preview */}
+                        <div className="absolute inset-0">
+                          <img
+                            src={image.previewUrl}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
+                        {/* Upload Overlay */}
+                        {(image.isUploading || image.error) && (
+                          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                            <div className="text-center text-white">
+                              <StatusIcon className={`w-6 h-6 mx-auto mb-1 ${
+                                image.isUploading ? 'animate-spin' : ''
+                              } ${status.color}`} />
+                              <p className="text-xs font-light">{status.text}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Main image badge */}
+                        {mainImageIndex === index && image.uploadedUrl && !image.error && (
+                          <div className="absolute top-2 left-2 bg-gray-900 text-white text-xs px-2 py-1 font-light uppercase tracking-wider">
+                            Główne
+                          </div>
+                        )}
+
+                        {/* Success badge */}
+                        {image.uploadedUrl && !image.error && (
+                          <div className="absolute top-2 right-8 bg-green-500 text-white p-1 rounded-full">
+                            <CheckCircle className="w-3 h-3" />
+                          </div>
+                        )}
+
+                        {/* Error badge */}
+                        {image.error && (
+                          <div className="absolute top-2 right-8 bg-red-500 text-white p-1 rounded-full">
+                            <AlertTriangle className="w-3 h-3" />
+                          </div>
+                        )}
+                        
+                        {/* Remove button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeImage(index);
+                          }}
+                          className="absolute top-2 right-2 p-1 bg-red-600 text-white hover:bg-red-700 transition-colors rounded-full"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+
+                        {/* Progress bar */}
+                        {image.isUploading && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-2">
+                            <div className="w-full bg-gray-700 rounded-full h-1">
+                              <div 
+                                className="bg-blue-500 h-1 rounded-full transition-all duration-300"
+                                style={{ width: `${image.progress}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
+
+                {/* Upload Summary */}
+                {uploadedImages.length > 0 && (
+                  <div className="mt-4 text-xs text-gray-500 font-light">
+                    <div className="flex items-center space-x-4">
+                      <span>✅ Dodane: {validUploadedImages.length}</span>
+                      {uploadedImages.some(img => img.isUploading) && (
+                        <span>⏳ Upload'owanie: {uploadedImages.filter(img => img.isUploading).length}</span>
+                      )}
+                      {uploadedImages.some(img => img.error) && (
+                        <span className="text-red-500">❌ Błędy: {uploadedImages.filter(img => img.error).length}</span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -583,7 +782,12 @@ export default function AddProductPage() {
             <div className="flex items-center space-x-3">
               <button
                 type="button"
-                className="inline-flex items-center px-6 py-3 border border-gray-200 text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all duration-300 font-light uppercase tracking-wider"
+                disabled={validUploadedImages.length === 0}
+                className={`inline-flex items-center px-6 py-3 border transition-all duration-300 font-light uppercase tracking-wider ${
+                  validUploadedImages.length > 0
+                    ? 'border-gray-200 text-gray-700 hover:border-gray-900 hover:text-gray-900'
+                    : 'border-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
               >
                 <Eye className="w-4 h-4 mr-2" />
                 Podgląd
@@ -591,9 +795,9 @@ export default function AddProductPage() {
               
               <button
                 type="submit"
-                disabled={!isValid || isLoading || uploadedImages.length === 0}
+                disabled={!canSubmit}
                 className={`inline-flex items-center px-8 py-3 font-light transition-all duration-300 uppercase tracking-wider ${
-                  isValid && !isLoading && uploadedImages.length > 0
+                  canSubmit
                     ? 'bg-gray-900 text-white hover:bg-gray-800'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
@@ -602,6 +806,11 @@ export default function AddProductPage() {
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Zapisywanie...
+                  </>
+                ) : isUploadingImages ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Upload zdjęć...
                   </>
                 ) : (
                   <>
@@ -612,6 +821,16 @@ export default function AddProductPage() {
               </button>
             </div>
           </div>
+
+          {/* Help text */}
+          {!canSubmit && uploadedImages.length > 0 && (
+            <div className="text-center">
+              <p className="text-sm text-gray-500 font-light">
+                {isUploadingImages && 'Poczekaj aż wszystkie zdjęcia zostaną dodane...'}
+                {!isUploadingImages && validUploadedImages.length === 0 && 'Dodaj co najmniej jedno zdjęcie, aby zapisać produkt.'}
+              </p>
+            </div>
+          )}
         </form>
       </div>
     </div>
