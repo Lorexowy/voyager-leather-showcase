@@ -11,24 +11,24 @@ const contactInfo = [
   {
     icon: MapPin,
     title: 'Adres',
-    details: ['ul. Przykładowa 123', '00-000 Warszawa']
+    details: ['Aleja Stefana Batorego 60', '33-300 Nowy Sącz']
   },
   {
     icon: Phone,
     title: 'Telefon',
-    details: ['+48 123 456 789'],
-    href: 'tel:+48123456789'
+    details: ['+48 505 461 050'],
+    href: 'tel:+48505461050'
   },
   {
     icon: Mail,
     title: 'Email',
-    details: ['kontakt@voyager.pl'],
-    href: 'mailto:kontakt@voyager.pl'
+    details: ['voyager.sopel@gmail.com'],
+    href: 'mailto:voyager.sopel@gmail.com'
   },
   {
     icon: Clock,
     title: 'Godziny pracy',
-    details: ['Pon - Pt: 8:00 - 17:00', 'Sob: 9:00 - 14:00', 'Niedz: zamknięte']
+    details: ['Pon - Pt: 6:00 - 14:00', 'Sob: zamknięte', 'Niedz: zamknięte']
   }
 ];
 
@@ -146,7 +146,7 @@ export default function ContactPage() {
         {/* Bottom CTA - minimal */}
         <div className="mt-32 text-center bg-gray-900 text-white p-16">
           <h2 className="text-3xl font-light mb-6 tracking-tight">
-            Potrzebujesz natychmiastowej pomocy?
+            Potrzebujesz skontaktować się jak najszybciej?
           </h2>
           <p className="text-gray-300 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
             Jeśli masz pilne pytania dotyczące zamówienia lub potrzebujesz szybkiej wyceny, 

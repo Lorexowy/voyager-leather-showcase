@@ -24,16 +24,10 @@ export default function HeroSection() {
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center max-w-4xl mx-auto">
-          {/* Badge */}
-          <div className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm text-white mb-8 font-light border border-white/20">
-            Ekskluzywna galanteria skórzana
-          </div>
           
           {/* Main Heading */}
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-light text-white mb-8 leading-none tracking-tight">
-            Rzemiosło
-            <span className="block font-light text-white/80">Skórzane</span>
-            <span className="block font-medium">Doskonałość</span>
+            <span className="block font-medium">Polska Galanteria Skórzana</span>
           </h1>
           
           {/* Description */}
@@ -58,26 +52,6 @@ export default function HeroSection() {
             >
               Skontaktuj się
             </Link>
-          </div>
-        </div>
-        
-        {/* Stats - positioned at bottom */}
-        <div className="mt-24 grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12 max-w-4xl mx-auto">
-          <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-light text-white mb-2">15+</div>
-            <div className="text-white/80 text-xs sm:text-sm font-light uppercase tracking-wider">Lat doświadczenia</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-light text-white mb-2">50+</div>
-            <div className="text-white/80 text-xs sm:text-sm font-light uppercase tracking-wider">Produktów</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-light text-white mb-2">100%</div>
-            <div className="text-white/80 text-xs sm:text-sm font-light uppercase tracking-wider">Skóra naturalna</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl sm:text-3xl font-light text-white mb-2">24h</div>
-            <div className="text-white/80 text-xs sm:text-sm font-light uppercase tracking-wider">Czas odpowiedzi</div>
           </div>
         </div>
       </div>

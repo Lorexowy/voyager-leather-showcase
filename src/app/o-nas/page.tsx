@@ -30,7 +30,7 @@ const values = [
 
 const timeline = [
   {
-    year: '2008',
+    year: '2004',
     title: 'Początek działalności',
     description: 'Firma Voyager rozpoczyna działalność jako mały warsztat rodzinny specjalizujący się w produkcji pasków skórzanych.'
   },
@@ -56,31 +56,8 @@ const timeline = [
   }
 ];
 
-const team = [
-  {
-    name: 'Aleksandra Sopel',
-    role: 'Założycielka i Dyrektor Kreatywny',
-    description: 'Wizjoner marki AS, odpowiedzialna za tworzenie ekskluzywnych projektów i nadzór nad jakością produktów.',
-    image: '/placeholder-aleksandra.jpg'
-  },
-  {
-    name: 'Marek Kowalski',
-    role: 'Mistrz Rzemieślnik',
-    description: 'Ekspert z 20-letnim doświadczeniem w pracy ze skórą, odpowiedzialny za jakość wykonania każdego produktu.',
-    image: '/placeholder-marek.jpg'
-  },
-  {
-    name: 'Anna Nowak',
-    role: 'Kierownik ds. Klientów',
-    description: 'Zajmuje się obsługą klientów hurtowych i koordynuje proces personalizacji produktów dla firm.',
-    image: '/placeholder-anna.jpg'
-  }
-];
-
 const stats = [
-  { number: '15+', label: 'Lat doświadczenia' },
-  { number: '1000+', label: 'Zadowolonych klientów' },
-  { number: '50+', label: 'Produktów w ofercie' },
+  { number: '21', label: 'Lat doświadczenia' },
   { number: '100%', label: 'Skóra naturalna' }
 ];
 
@@ -100,7 +77,7 @@ export default function AboutPage() {
               </h1>
               
               <p className="text-xl text-gray-600 mb-12 leading-relaxed font-light">
-                Od ponad 15 lat tworzymy wyjątkowe produkty ze skóry naturalnej, 
+                Od ponad 21 lat tworzymy wyjątkowe produkty ze skóry naturalnej, 
                 łącząc tradycyjne rzemiosło z nowoczesnym designem. Nasza misja to 
                 dostarczanie produktów najwyższej jakości, które służą przez lata.
               </p>
@@ -142,7 +119,7 @@ export default function AboutPage() {
       {/* Stats Section - minimal */}
       <section className="py-16 bg-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-12">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
                 <div className="text-4xl font-light mb-3">
@@ -215,43 +192,6 @@ export default function AboutPage() {
                     <p className="text-gray-600 font-light">{item.description}</p>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Team Section - minimal */}
-      <section className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl font-light text-gray-900 mb-6 tracking-tight">
-              Nasz Zespół
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light">
-              Poznaj ludzi, którzy każdego dnia pracują nad tworzeniem wyjątkowych produktów.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-12">
-            {team.map((member, index) => (
-              <div key={index} className="text-center group">
-                <div className="relative mb-8">
-                  <div className="aspect-square bg-gray-100 border border-gray-200 relative overflow-hidden group-hover:border-gray-900 transition-colors">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center text-gray-300">
-                        <div className="w-16 h-16 mx-auto mb-3 border border-gray-200 flex items-center justify-center">
-                          <Users className="w-8 h-8" />
-                        </div>
-                        <p className="text-sm font-light">{member.name}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <h3 className="text-xl font-light text-gray-900 mb-3">{member.name}</h3>
-                <div className="text-gray-600 font-light mb-4 uppercase tracking-wider text-sm">{member.role}</div>
-                <p className="text-gray-600 text-sm leading-relaxed font-light">{member.description}</p>
               </div>
             ))}
           </div>

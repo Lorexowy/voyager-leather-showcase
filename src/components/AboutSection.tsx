@@ -11,7 +11,7 @@ const features = [
   {
     icon: Clock,
     title: 'Tradycja i Doświadczenie',
-    description: 'Ponad 15 lat doświadczenia w branży galanterii skórzanej pozwala nam tworzyć produkty na najwyższym poziomie.'
+    description: 'Ponad 21 lat doświadczenia w branży galanterii skórzanej pozwala nam tworzyć produkty na najwyższym poziomie.'
   },
   {
     icon: Users,
@@ -33,43 +33,27 @@ export default function AboutSection() {
           {/* Content - clean typography */}
           <div>
             <h2 className="text-4xl font-light text-gray-900 mb-8 tracking-tight">
-              O Firmie Voyager
+              O Firmie <strong>VOYAGER</strong>
             </h2>
             
             <div className="space-y-6 text-gray-600 font-light leading-relaxed">
               <p className="text-lg">
                 <strong className="font-medium text-gray-900">Voyager</strong> to firma z tradycjami, specjalizująca się w produkcji 
-                wysokiej jakości galanterii skórzanej. Od ponad 15 lat tworzymy produkty, 
+                wysokiej jakości galanterii skórzanej. Od ponad 21 lat tworzymy produkty, 
                 które łączą w sobie elegancję, funkcjonalność i trwałość.
               </p>
               
               <p>
                 Nasza oferta obejmuje szeroki asortyment produktów - od klasycznych pasków 
                 i eleganckich torebek, przez funkcjonalne plecaki, aż po ekskluzywne 
-                akcesoria firmowe. Każdy produkt wykonywany jest ręcznie przez doświadczonych 
-                rzemieślników.
+                akcesoria firmowe. Każdy produkt wykonywany jest ręcznie z najwyższej jakości skóry naturalnej,
+                co zapewnia nie tylko estetykę, ale i długowieczność.
               </p>
               
               <p>
                 Szczególnie dumni jesteśmy z naszej linii premium <strong className="font-medium text-gray-900">"AS | Aleksandra Sopel"</strong>, 
                 która reprezentuje absolutny szczyt jakości i designu w dziedzinie galanterii skórzanej.
               </p>
-            </div>
-
-            {/* Stats - minimalistyczne */}
-            <div className="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-gray-200">
-              <div className="text-center">
-                <div className="text-3xl font-light text-gray-900 mb-2">15+</div>
-                <div className="text-sm text-gray-600 font-light uppercase tracking-wider">Lat na rynku</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-light text-gray-900 mb-2">1000+</div>
-                <div className="text-sm text-gray-600 font-light uppercase tracking-wider">Zadowolonych klientów</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-light text-gray-900 mb-2">50+</div>
-                <div className="text-sm text-gray-600 font-light uppercase tracking-wider">Produktów w ofercie</div>
-              </div>
             </div>
           </div>
 
