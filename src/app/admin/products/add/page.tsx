@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm, useFieldArray } from 'react-hook-form';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { isUserAdmin } from '@/lib/auth';
+import { addProduct } from '@/lib/products';
 import { 
   ArrowLeft, 
   Upload, 
@@ -29,6 +33,8 @@ interface ProductForm {
 
 export default function AddProductPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [mainImageIndex, setMainImageIndex] = useState(0);
   const router = useRouter();
@@ -58,10 +64,31 @@ export default function AddProductPage() {
 
   const watchedCategory = watch('category');
 
+  // Sprawdź autoryzację
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        const adminStatus = await isUserAdmin(currentUser);
+        if (adminStatus) {
+          setIsAuthorized(true);
+        } else {
+          toast.error('Brak uprawnień administratora');
+          router.push('/admin/login');
+        }
+      } else {
+        router.push('/admin/login');
+      }
+      setIsCheckingAuth(false);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
       // Tutaj będzie logika uploadowania do Firebase Storage
+      // Na razie symulujemy dodanie placeholder'ów
       const newImages = Array.from(files).map((file, index) => 
         `/placeholder-upload-${uploadedImages.length + index}.jpg`
       );
@@ -86,29 +113,44 @@ export default function AddProductPage() {
     setIsLoading(true);
 
     try {
-      // Tutaj będzie logika zapisywania do Firebase
       const productData = {
-        ...data,
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        dimensions: data.dimensions,
         availableColors: data.availableColors.map(color => color.value).filter(Boolean),
         images: uploadedImages,
         mainImage: uploadedImages[mainImageIndex],
-        createdAt: new Date(),
-        updatedAt: new Date()
+        isActive: data.isActive
       };
 
-      console.log('Product data to save:', productData);
-      
-      // Symulacja zapisywania
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const productId = await addProduct(productData);
       
       toast.success('Produkt został dodany pomyślnie!');
       router.push('/admin/dashboard');
-    } catch (error) {
-      toast.error('Wystąpił błąd podczas zapisywania produktu');
+    } catch (error: any) {
+      console.error('Error adding product:', error);
+      toast.error(error.message || 'Wystąpił błąd podczas zapisywania produktu');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Loading state podczas sprawdzania autoryzacji
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600 font-light">Sprawdzanie uprawnień...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return null; // Przekierowanie w toku
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -119,13 +161,13 @@ export default function AddProductPage() {
             <div className="flex items-center space-x-4">
               <Link 
                 href="/admin/dashboard"
-                className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors font-light"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Powrót do dashboardu
               </Link>
               <div className="h-6 border-l border-gray-300"></div>
-              <h1 className="text-lg font-medium text-gray-900">Dodaj nowy produkt</h1>
+              <h1 className="text-lg font-light text-gray-900">Dodaj nowy produkt</h1>
             </div>
           </div>
         </div>
@@ -135,12 +177,12 @@ export default function AddProductPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           {/* Basic Information */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-6">Podstawowe informacje</h2>
+            <h2 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Podstawowe informacje</h2>
             
             <div className="grid md:grid-cols-2 gap-6">
               {/* Product Name */}
               <div className="md:col-span-2">
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="name" className="block text-sm font-light text-gray-900 mb-3 uppercase tracking-wider">
                   Nazwa produktu <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -153,14 +195,14 @@ export default function AddProductPage() {
                       message: 'Nazwa musi mieć co najmniej 3 znaki'
                     }
                   })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent ${
-                    errors.name ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border focus:outline-none bg-white font-light transition-colors ${
+                    errors.name ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-gray-900'
                   }`}
                   placeholder="Np. Elegancka Torebka Damska"
                 />
                 {errors.name && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
+                  <p className="mt-2 text-sm text-red-600 flex items-center font-light">
+                    <AlertCircle className="w-4 h-4 mr-2" />
                     {errors.name.message}
                   </p>
                 )}
@@ -168,13 +210,13 @@ export default function AddProductPage() {
 
               {/* Category */}
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="category" className="block text-sm font-light text-gray-900 mb-3 uppercase tracking-wider">
                   Kategoria <span className="text-red-500">*</span>
                 </label>
                 <select
                   id="category"
                   {...register('category', { required: 'Kategoria jest wymagana' })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light transition-colors"
                 >
                   {CATEGORIES.map((category) => (
                     <option key={category.id} value={category.id}>
@@ -186,21 +228,21 @@ export default function AddProductPage() {
 
               {/* Dimensions */}
               <div>
-                <label htmlFor="dimensions" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="dimensions" className="block text-sm font-light text-gray-900 mb-3 uppercase tracking-wider">
                   Wymiary <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   id="dimensions"
                   {...register('dimensions', { required: 'Wymiary są wymagane' })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent ${
-                    errors.dimensions ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border focus:outline-none bg-white font-light transition-colors ${
+                    errors.dimensions ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-gray-900'
                   }`}
                   placeholder="Np. 30x25x12 cm"
                 />
                 {errors.dimensions && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
+                  <p className="mt-2 text-sm text-red-600 flex items-center font-light">
+                    <AlertCircle className="w-4 h-4 mr-2" />
                     {errors.dimensions.message}
                   </p>
                 )}
@@ -208,7 +250,7 @@ export default function AddProductPage() {
 
               {/* Description */}
               <div className="md:col-span-2">
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="description" className="block text-sm font-light text-gray-900 mb-3 uppercase tracking-wider">
                   Opis produktu <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -221,14 +263,14 @@ export default function AddProductPage() {
                       message: 'Opis musi mieć co najmniej 20 znaków'
                     }
                   })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent resize-none ${
-                    errors.description ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border focus:outline-none bg-white resize-none font-light transition-colors ${
+                    errors.description ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-gray-900'
                   }`}
                   placeholder="Opisz produkt szczegółowo..."
                 />
                 {errors.description && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
+                  <p className="mt-2 text-sm text-red-600 flex items-center font-light">
+                    <AlertCircle className="w-4 h-4 mr-2" />
                     {errors.description.message}
                   </p>
                 )}
@@ -238,7 +280,7 @@ export default function AddProductPage() {
 
           {/* Available Colors */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-6">Dostępne kolory</h2>
+            <h2 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Dostępne kolory</h2>
             
             <div className="space-y-3">
               {fields.map((field, index) => (
@@ -248,7 +290,7 @@ export default function AddProductPage() {
                     {...register(`availableColors.${index}.value` as const, {
                       required: index === 0 ? 'Co najmniej jeden kolor jest wymagany' : false
                     })}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brown-500 focus:border-transparent"
+                    className="flex-1 px-4 py-3 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white font-light transition-colors"
                     placeholder="Np. Czarny, Brązowy, Beżowy..."
                   />
                   {fields.length > 1 && (
@@ -266,9 +308,9 @@ export default function AddProductPage() {
               <button
                 type="button"
                 onClick={() => append({ value: '' })}
-                className="inline-flex items-center px-3 py-2 text-sm text-brown-600 hover:text-brown-800 transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors font-light border border-gray-200 hover:border-gray-900"
               >
-                <Plus className="w-4 h-4 mr-1" />
+                <Plus className="w-4 h-4 mr-2" />
                 Dodaj kolor
               </button>
             </div>
@@ -276,17 +318,17 @@ export default function AddProductPage() {
 
           {/* Images */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-6">Zdjęcia produktu</h2>
+            <h2 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Zdjęcia produktu</h2>
             
             {/* Upload Area */}
             <div className="mb-6">
               <label className="block w-full">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-brown-400 transition-colors cursor-pointer">
+                <div className="border-2 border-dashed border-gray-200 p-12 text-center hover:border-gray-900 transition-colors cursor-pointer bg-gray-50">
                   <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium text-brown-600">Kliknij aby dodać zdjęcia</span> lub przeciągnij je tutaj
+                  <div className="text-sm text-gray-600 font-light">
+                    <span className="font-medium text-gray-900">Kliknij aby dodać zdjęcia</span> lub przeciągnij je tutaj
                   </div>
-                  <div className="text-xs text-gray-500 mt-2">
+                  <div className="text-xs text-gray-500 mt-2 font-light">
                     PNG, JPG, JPEG do 5MB każde
                   </div>
                 </div>
@@ -304,10 +346,10 @@ export default function AddProductPage() {
             {uploadedImages.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-medium text-gray-900">
+                  <h3 className="text-sm font-light text-gray-900 uppercase tracking-wider">
                     Dodane zdjęcia ({uploadedImages.length})
                   </h3>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 font-light">
                     Kliknij na zdjęcie, aby ustawić jako główne
                   </p>
                 </div>
@@ -316,18 +358,21 @@ export default function AddProductPage() {
                   {uploadedImages.map((image, index) => (
                     <div 
                       key={index}
-                      className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
-                        mainImageIndex === index ? 'border-brown-500' : 'border-transparent hover:border-gray-300'
+                      className={`relative aspect-square bg-gray-50 border-2 cursor-pointer transition-all ${
+                        mainImageIndex === index ? 'border-gray-900' : 'border-gray-200 hover:border-gray-400'
                       }`}
                       onClick={() => setMainImageIndex(index)}
                     >
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <ImageIcon className="w-8 h-8 text-gray-400" />
+                        <div className="text-center text-gray-400">
+                          <ImageIcon className="w-8 h-8 mx-auto mb-2" />
+                          <p className="text-xs font-light">Zdjęcie {index + 1}</p>
+                        </div>
                       </div>
                       
                       {/* Main image badge */}
                       {mainImageIndex === index && (
-                        <div className="absolute top-2 left-2 bg-brown-600 text-white text-xs px-2 py-1 rounded">
+                        <div className="absolute top-2 left-2 bg-gray-900 text-white text-xs px-2 py-1 font-light uppercase tracking-wider">
                           Główne
                         </div>
                       )}
@@ -339,7 +384,7 @@ export default function AddProductPage() {
                           e.stopPropagation();
                           removeImage(index);
                         }}
-                        className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                        className="absolute top-2 right-2 p-1 bg-red-600 text-white hover:bg-red-700 transition-colors"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -352,16 +397,16 @@ export default function AddProductPage() {
 
           {/* Settings */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-6">Ustawienia</h2>
+            <h2 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Ustawienia</h2>
             
             <div className="flex items-center space-x-3">
               <input
                 type="checkbox"
                 id="isActive"
                 {...register('isActive')}
-                className="w-4 h-4 text-brown-600 border-gray-300 rounded focus:ring-brown-500"
+                className="w-4 h-4 text-gray-900 border-gray-300 focus:ring-gray-900"
               />
-              <label htmlFor="isActive" className="text-sm text-gray-700">
+              <label htmlFor="isActive" className="text-sm text-gray-700 font-light">
                 Produkt aktywny (widoczny dla klientów)
               </label>
             </div>
@@ -371,7 +416,7 @@ export default function AddProductPage() {
           <div className="flex items-center justify-between">
             <Link
               href="/admin/dashboard"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center px-6 py-3 border border-gray-200 text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all duration-300 font-light uppercase tracking-wider"
             >
               Anuluj
             </Link>
@@ -379,7 +424,7 @@ export default function AddProductPage() {
             <div className="flex items-center space-x-3">
               <button
                 type="button"
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center px-6 py-3 border border-gray-200 text-gray-700 hover:border-gray-900 hover:text-gray-900 transition-all duration-300 font-light uppercase tracking-wider"
               >
                 <Eye className="w-4 h-4 mr-2" />
                 Podgląd
@@ -388,9 +433,9 @@ export default function AddProductPage() {
               <button
                 type="submit"
                 disabled={!isValid || isLoading || uploadedImages.length === 0}
-                className={`inline-flex items-center px-6 py-2 font-medium rounded-lg transition-all ${
+                className={`inline-flex items-center px-8 py-3 font-light transition-all duration-300 uppercase tracking-wider ${
                   isValid && !isLoading && uploadedImages.length > 0
-                    ? 'bg-brown-700 text-white hover:bg-brown-800'
+                    ? 'bg-gray-900 text-white hover:bg-gray-800'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >

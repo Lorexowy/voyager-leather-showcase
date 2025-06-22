@@ -7,6 +7,12 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { isUserAdmin, signOut } from '@/lib/auth';
 import { 
+  getAllProducts, 
+  toggleProductStatus as toggleProductStatusFirebase,
+  deleteProduct as deleteProductFirebase,
+  getProductsStats 
+} from '@/lib/products';
+import { 
   Package, 
   Plus, 
   Edit, 
@@ -23,7 +29,8 @@ import {
   Users,
   Mail,
   Clock,
-  Shield
+  Shield,
+  RefreshCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Product, ProductCategory, CATEGORIES } from '@/types';
@@ -31,99 +38,18 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import ContactMessagesPanel from '@/components/ContactMessagesPanel';
 import AdminManagementPanel from '@/components/AdminManagementPanel';
 
-// Mock data - później zastąpimy danymi z Firebase
-const mockProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Elegancka Torebka Damska',
-    description: 'Klasyczna torebka wykonana ze skóry naturalnej najwyższej jakości.',
-    category: 'torebki' as ProductCategory,
-    mainImage: '/placeholder-bag.jpg',
-    images: ['/placeholder-bag.jpg', '/placeholder-bag-2.jpg'],
-    availableColors: ['Czarny', 'Brązowy', 'Beżowy'],
-    dimensions: '30x25x12 cm',
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-20'),
-    isActive: true
-  },
-  {
-    id: '2',
-    name: 'Biznesowy Plecak Skórzany',
-    description: 'Funkcjonalny plecak idealny do pracy.',
-    category: 'plecaki' as ProductCategory,
-    mainImage: '/placeholder-backpack.jpg',
-    images: ['/placeholder-backpack.jpg'],
-    availableColors: ['Czarny', 'Brązowy'],
-    dimensions: '40x30x15 cm',
-    createdAt: new Date('2024-01-10'),
-    updatedAt: new Date('2024-01-18'),
-    isActive: true
-  },
-  {
-    id: '3',
-    name: 'Klasyczny Pasek Męski',
-    description: 'Elegancki pasek z naturalnej skóry.',
-    category: 'paski' as ProductCategory,
-    mainImage: '/placeholder-belt.jpg',
-    images: ['/placeholder-belt.jpg'],
-    availableColors: ['Czarny', 'Brązowy', 'Koniakowy'],
-    dimensions: 'Szerokość: 3.5 cm',
-    createdAt: new Date('2024-01-05'),
-    updatedAt: new Date('2024-01-15'),
-    isActive: false
-  },
-  {
-    id: '4',
-    name: 'AS | Premium Portfel',
-    description: 'Ekskluzywny portfel z linii Aleksandra Sopel.',
-    category: 'as-aleksandra-sopel' as ProductCategory,
-    mainImage: '/placeholder-wallet.jpg',
-    images: ['/placeholder-wallet.jpg'],
-    availableColors: ['Czarny', 'Bordowy'],
-    dimensions: '11x9x2 cm',
-    createdAt: new Date('2024-01-12'),
-    updatedAt: new Date('2024-01-22'),
-    isActive: true
-  },
-  {
-    id: '5',
-    name: 'Personalizowany Organizer',
-    description: 'Elegancki organizer biurowy z możliwością grawerowania logo firmy.',
-    category: 'personalizacja' as ProductCategory,
-    mainImage: '/placeholder-organizer.jpg',
-    images: ['/placeholder-organizer.jpg'],
-    availableColors: ['Czarny', 'Brązowy', 'Koniakowy'],
-    dimensions: '25x20x5 cm',
-    createdAt: new Date('2024-01-08'),
-    updatedAt: new Date('2024-01-16'),
-    isActive: true
-  },
-  {
-    id: '6',
-    name: 'Damska Torebka Crossbody',
-    description: 'Mała, praktyczna torebka na ramię, idealna na co dzień.',
-    category: 'torebki' as ProductCategory,
-    mainImage: '/placeholder-crossbody.jpg',
-    images: ['/placeholder-crossbody.jpg'],
-    availableColors: ['Czarny', 'Beżowy', 'Czerwony'],
-    dimensions: '25x18x8 cm',
-    createdAt: new Date('2024-01-14'),
-    updatedAt: new Date('2024-01-19'),
-    isActive: true
-  }
-];
-
-const stats = [
-  { label: 'Wszystkie produkty', value: mockProducts.length.toString(), icon: Package, color: 'bg-blue-500' },
-  { label: 'Aktywne produkty', value: mockProducts.filter(p => p.isActive).length.toString(), icon: Eye, color: 'bg-green-500' },
-  { label: 'Nieaktywne produkty', value: mockProducts.filter(p => !p.isActive).length.toString(), icon: Filter, color: 'bg-yellow-500' },
-  { label: 'Kategorie', value: CATEGORIES.length.toString(), icon: BarChart3, color: 'bg-purple-500' }
-];
-
 export default function AdminDashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsStats, setProductsStats] = useState({
+    total: 0,
+    active: 0,
+    inactive: 0,
+    byCategory: {} as Record<ProductCategory, { total: number; active: number }>
+  });
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | 'all'>('all');
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
@@ -154,6 +80,30 @@ export default function AdminDashboard() {
     return () => unsubscribe();
   }, [router]);
 
+  // Załaduj produkty gdy admin jest zalogowany
+  useEffect(() => {
+    if (isAdmin) {
+      fetchProducts();
+    }
+  }, [isAdmin]);
+
+  // Funkcja ładowania produktów
+  const fetchProducts = async () => {
+    setIsLoadingProducts(true);
+    try {
+      const [allProducts, stats] = await Promise.all([
+        getAllProducts(),
+        getProductsStats()
+      ]);
+      setProducts(allProducts);
+      setProductsStats(stats);
+    } catch (error: any) {
+      toast.error(error.message || 'Nie udało się załadować produktów');
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
+
   // Pokaż loader podczas sprawdzania autoryzacji
   if (isLoading) {
     return (
@@ -170,7 +120,7 @@ export default function AdminDashboard() {
     return null; // Przekierowanie w toku
   }
 
-  const filteredProducts = mockProducts.filter(product => {
+  const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
@@ -202,19 +152,15 @@ export default function AdminDashboard() {
     setIsDeleting(true);
 
     try {
-      // Tutaj będzie logika usuwania z Firebase
-      console.log('Deleting product:', productToDelete.id);
-      
-      // Symulacja usuwania
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await deleteProductFirebase(productToDelete.id);
       toast.success(`Produkt "${productToDelete.name}" został usunięty`);
       setShowDeleteDialog(false);
       setProductToDelete(null);
       
-      // W prawdziwej aplikacji tutaj odświeżylibyśmy listę produktów
-    } catch (error) {
-      toast.error('Wystąpił błąd podczas usuwania produktu');
+      // Odśwież listę produktów
+      await fetchProducts();
+    } catch (error: any) {
+      toast.error(error.message || 'Wystąpił błąd podczas usuwania produktu');
     } finally {
       setIsDeleting(false);
     }
@@ -222,23 +168,22 @@ export default function AdminDashboard() {
 
   const toggleProductStatus = async (productId: string) => {
     try {
-      // Tutaj będzie logika zmiany statusu w Firebase
-      const product = mockProducts.find(p => p.id === productId);
-      if (product) {
-        const newStatus = !product.isActive;
-        console.log('Toggle product status:', productId, newStatus);
-        
-        // Symulacja aktualizacji
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        toast.success(`Produkt ${newStatus ? 'aktywowany' : 'deaktywowany'}`);
-        
-        // W prawdziwej aplikacji tutaj odświeżylibyśmy dane
-      }
-    } catch (error) {
-      toast.error('Wystąpił błąd podczas zmiany statusu produktu');
+      const newStatus = await toggleProductStatusFirebase(productId);
+      toast.success(`Produkt ${newStatus ? 'aktywowany' : 'deaktywowany'}`);
+      
+      // Odśwież listę produktów
+      await fetchProducts();
+    } catch (error: any) {
+      toast.error(error.message || 'Wystąpił błąd podczas zmiany statusu produktu');
     }
   };
+
+  const stats = [
+    { label: 'Wszystkie produkty', value: productsStats.total.toString(), icon: Package, color: 'bg-blue-500' },
+    { label: 'Aktywne produkty', value: productsStats.active.toString(), icon: Eye, color: 'bg-green-500' },
+    { label: 'Nieaktywne produkty', value: productsStats.inactive.toString(), icon: Filter, color: 'bg-yellow-500' },
+    { label: 'Kategorie', value: CATEGORIES.length.toString(), icon: BarChart3, color: 'bg-purple-500' }
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -416,13 +361,24 @@ export default function AdminDashboard() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <h2 className="text-lg font-light text-gray-900">Zarządzanie Produktami</h2>
                   
-                  <Link
-                    href="/admin/products/add"
-                    className="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-light"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Dodaj Produkt
-                  </Link>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={fetchProducts}
+                      disabled={isLoadingProducts}
+                      className="inline-flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors font-light"
+                    >
+                      <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingProducts ? 'animate-spin' : ''}`} />
+                      Odśwież
+                    </button>
+                    
+                    <Link
+                      href="/admin/products/add"
+                      className="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-light"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Dodaj Produkt
+                    </Link>
+                  </div>
                 </div>
               </div>
 
@@ -457,140 +413,154 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Products Table */}
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Produkt
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Kategoria
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Ostatnia aktualizacja
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Akcje
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredProducts.map((product) => (
-                      <tr key={product.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-12 w-12">
-                              <div className="h-12 w-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
-                                <span className="text-gray-600 font-medium text-sm">
-                                  {product.name.charAt(0)}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900 line-clamp-1">
-                                {product.name}
-                              </div>
-                              <div className="text-sm text-gray-500 line-clamp-1 font-light">
-                                {product.description.substring(0, 50)}...
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                            product.category === 'as-aleksandra-sopel' 
-                              ? 'bg-gray-800 text-white' 
-                              : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {getCategoryName(product.category)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <button
-                            onClick={() => toggleProductStatus(product.id)}
-                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                              product.isActive 
-                                ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                                : 'bg-red-100 text-red-800 hover:bg-red-200'
-                            } transition-colors cursor-pointer`}
-                          >
-                            {product.isActive ? 'Aktywny' : 'Nieaktywny'}
-                          </button>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-light">
-                          {product.updatedAt.toLocaleDateString('pl-PL')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end space-x-2">
-                            <Link
-                              href={`/produkty/szczegoly/${product.id}`}
-                              target="_blank"
-                              className="text-blue-600 hover:text-blue-800 p-1 rounded transition-colors"
-                              title="Zobacz produkt"
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                            </Link>
-                            
-                            <Link
-                              href={`/admin/products/edit/${product.id}`}
-                              className="text-gray-600 hover:text-gray-800 p-1 rounded transition-colors"
-                              title="Edytuj"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Link>
-                            
-                            <button
-                              onClick={() => handleDeleteProduct(product)}
-                              className="text-red-600 hover:text-red-800 p-1 rounded transition-colors"
-                              title="Usuń"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Empty state */}
-              {filteredProducts.length === 0 && (
-                <div className="px-6 py-12 text-center">
-                  <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-light text-gray-900 mb-2">Brak produktów</h3>
-                  <p className="text-gray-500 mb-6 font-light">
-                    {searchTerm || selectedCategory !== 'all' 
-                      ? 'Nie znaleziono produktów pasujących do kryteriów wyszukiwania.'
-                      : 'Nie masz jeszcze żadnych produktów w bazie danych.'
-                    }
-                  </p>
-                  {(!searchTerm && selectedCategory === 'all') && (
-                    <Link
-                      href="/admin/products/add"
-                      className="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-light"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Dodaj pierwszy produkt
-                    </Link>
-                  )}
+              {/* Loading state */}
+              {isLoadingProducts ? (
+                <div className="p-12 text-center">
+                  <RefreshCw className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-4" />
+                  <p className="text-gray-600 font-light">Ładowanie produktów...</p>
                 </div>
-              )}
-
-              {/* Results count */}
-              {filteredProducts.length > 0 && (
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-700 font-light">
-                      Pokazano <span className="font-medium">{filteredProducts.length}</span> z <span className="font-medium">{mockProducts.length}</span> produktów
-                    </div>
+              ) : (
+                <>
+                  {/* Products Table */}
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Produkt
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Kategoria
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Ostatnia aktualizacja
+                          </th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Akcje
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {filteredProducts.map((product) => (
+                          <tr key={product.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="flex-shrink-0 h-12 w-12">
+                                  <div className="h-12 w-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
+                                    <span className="text-gray-600 font-medium text-sm">
+                                      {product.name.charAt(0)}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="ml-4">
+                                  <div className="text-sm font-medium text-gray-900 line-clamp-1">
+                                    {product.name}
+                                  </div>
+                                  <div className="text-sm text-gray-500 line-clamp-1 font-light">
+                                    {product.description.substring(0, 50)}...
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                product.category === 'as-aleksandra-sopel' 
+                                  ? 'bg-gray-800 text-white' 
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {getCategoryName(product.category)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <button
+                                onClick={() => toggleProductStatus(product.id)}
+                                className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                  product.isActive 
+                                    ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                                    : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                } transition-colors cursor-pointer`}
+                              >
+                                {product.isActive ? 'Aktywny' : 'Nieaktywny'}
+                              </button>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-light">
+                              {product.updatedAt.toLocaleDateString('pl-PL')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex items-center justify-end space-x-2">
+                                <Link
+                                  href={`/produkty/szczegoly/${product.id}`}
+                                  target="_blank"
+                                  className="text-blue-600 hover:text-blue-800 p-1 rounded transition-colors"
+                                  title="Zobacz produkt"
+                                >
+                                  <ExternalLink className="w-4 h-4" />
+                                </Link>
+                                
+                                <Link
+                                  href={`/admin/products/edit/${product.id}`}
+                                  className="text-gray-600 hover:text-gray-800 p-1 rounded transition-colors"
+                                  title="Edytuj"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Link>
+                                
+                                <button
+                                  onClick={() => handleDeleteProduct(product)}
+                                  className="text-red-600 hover:text-red-800 p-1 rounded transition-colors"
+                                  title="Usuń"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                </div>
+
+                  {/* Empty state */}
+                  {filteredProducts.length === 0 && !isLoadingProducts && (
+                    <div className="px-6 py-12 text-center">
+                      <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-light text-gray-900 mb-2">
+                        {products.length === 0 ? 'Brak produktów' : 'Nie znaleziono produktów'}
+                      </h3>
+                      <p className="text-gray-500 mb-6 font-light">
+                        {products.length === 0 
+                          ? 'Nie masz jeszcze żadnych produktów w bazie danych.'
+                          : searchTerm || selectedCategory !== 'all' 
+                            ? 'Nie znaleziono produktów pasujących do kryteriów wyszukiwania.'
+                            : 'Nie znaleziono produktów.'
+                        }
+                      </p>
+                      {products.length === 0 && (
+                        <Link
+                          href="/admin/products/add"
+                          className="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-light"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Dodaj pierwszy produkt
+                        </Link>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Results count */}
+                  {filteredProducts.length > 0 && (
+                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-700 font-light">
+                          Pokazano <span className="font-medium">{filteredProducts.length}</span> z <span className="font-medium">{products.length}</span> produktów
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -600,7 +570,7 @@ export default function AdminDashboard() {
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-light text-gray-900 mb-4">Ostatnie aktualizacje</h3>
                 <div className="space-y-3">
-                  {mockProducts
+                  {products
                     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
                     .slice(0, 5)
                     .map((product) => (
@@ -626,6 +596,12 @@ export default function AdminDashboard() {
                         </Link>
                       </div>
                     ))}
+                  
+                  {products.length === 0 && (
+                    <p className="text-gray-500 text-sm font-light text-center py-4">
+                      Brak produktów do wyświetlenia
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -634,18 +610,17 @@ export default function AdminDashboard() {
                 <h3 className="text-lg font-light text-gray-900 mb-4">Statystyki kategorii</h3>
                 <div className="space-y-3">
                   {CATEGORIES.map((category) => {
-                    const count = mockProducts.filter(p => p.category === category.id).length;
-                    const activeCount = mockProducts.filter(p => p.category === category.id && p.isActive).length;
+                    const categoryStats = productsStats.byCategory[category.id] || { total: 0, active: 0 };
                     return (
                       <div key={category.id} className="flex items-center justify-between">
                         <div className="flex-1">
                           <span className="text-sm text-gray-600 font-light">{category.name}</span>
                           <div className="text-xs text-gray-400 font-light">
-                            {activeCount} aktywnych z {count} produktów
+                            {categoryStats.active} aktywnych z {categoryStats.total} produktów
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-900">{count}</span>
+                          <span className="text-sm font-medium text-gray-900">{categoryStats.total}</span>
                           <Link
                             href={`/produkty/${category.slug}`}
                             target="_blank"
