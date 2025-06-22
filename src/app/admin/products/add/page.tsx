@@ -117,6 +117,10 @@ export default function AddProductPage() {
   };
 
   const onSubmit = async (data: ProductForm) => {
+    console.log('🔍 Debug - Form data submitted:', data);
+    console.log('🔍 Debug - Uploaded images:', uploadedImages);
+    console.log('🔍 Debug - Current user:', auth.currentUser?.email);
+
     if (uploadedImages.length === 0) {
       toast.error('Dodaj co najmniej jedno zdjęcie produktu');
       return;
@@ -132,7 +136,7 @@ export default function AddProductPage() {
     setIsLoading(true);
 
     try {
-      // Przygotuj wymiary (opcjonalne)
+      // Przygotuj wymiary - tylko jeśli checkbox zaznaczony i są wartości
       let dimensions: ProductDimensions | undefined = undefined;
       
       if (data.dimensionsEnabled) {
@@ -144,25 +148,34 @@ export default function AddProductPage() {
         // Sprawdź czy przynajmniej jeden wymiar został podany
         if (width || height || depth || length) {
           dimensions = {
-            width,
-            height,
-            depth,
-            length,
             unit: data.dimensionUnit
           };
+          
+          // Dodaj tylko niepuste wymiary (bez undefined)
+          if (width !== undefined) dimensions.width = width;
+          if (height !== undefined) dimensions.height = height;
+          if (depth !== undefined) dimensions.depth = depth;
+          if (length !== undefined) dimensions.length = length;
         }
       }
 
-      const productData = {
+      // Przygotuj dane produktu - bez undefined values
+      const productData: any = {
         name: data.name,
         description: data.description,
         category: data.category,
-        dimensions: dimensions,
         availableColors: validColors,
         images: uploadedImages,
         mainImage: uploadedImages[mainImageIndex],
         isActive: data.isActive
       };
+
+      // Dodaj dimensions tylko jeśli istnieją
+      if (dimensions) {
+        productData.dimensions = dimensions;
+      }
+
+      console.log('🔍 Sending product data:', productData);
 
       const productId = await addProduct(productData);
       
@@ -296,7 +309,7 @@ export default function AddProductPage() {
             </div>
           </div>
 
-          {/* Dimensions - Nowa sekcja */}
+          {/* Dimensions */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Wymiary produktu</h2>
             

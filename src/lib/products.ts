@@ -18,16 +18,37 @@ import { Product, ProductCategory } from '@/types';
 // Dodaj nowy produkt
 export const addProduct = async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
   try {
-    const docRef = await addDoc(collection(db, COLLECTIONS.PRODUCTS), {
-      ...productData,
+    console.log('🔍 Debug - Adding product with data:', productData);
+    
+    // Przygotuj dane - usuń undefined fields
+    const cleanData: any = {
+      name: productData.name,
+      description: productData.description,
+      category: productData.category,
+      availableColors: productData.availableColors,
+      images: productData.images,
+      mainImage: productData.mainImage,
+      isActive: productData.isActive,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
-    });
+    };
     
+    // Dodaj dimensions tylko jeśli istnieją i nie są undefined
+    if (productData.dimensions) {
+      cleanData.dimensions = productData.dimensions;
+    }
+    
+    console.log('🔍 Clean data to save:', cleanData);
+    
+    const docRef = await addDoc(collection(db, COLLECTIONS.PRODUCTS), cleanData);
+    
+    console.log('✅ Product added successfully with ID:', docRef.id);
     return docRef.id;
-  } catch (error) {
-    console.error('Error adding product:', error);
-    throw new Error('Nie udało się dodać produktu');
+  } catch (error: any) {
+    console.error('❌ Detailed error adding product:', error);
+    console.error('❌ Error code:', error?.code);
+    console.error('❌ Error message:', error?.message);
+    throw new Error(`Nie udało się dodać produktu: ${error?.message || 'Nieznany błąd'}`);
   }
 };
 
@@ -146,10 +167,20 @@ export const updateProduct = async (productId: string, productData: Partial<Omit
   try {
     const docRef = doc(db, COLLECTIONS.PRODUCTS, productId);
     
-    await updateDoc(docRef, {
-      ...productData,
+    // Przygotuj dane do aktualizacji - usuń undefined values
+    const cleanData: any = {
       updatedAt: Timestamp.now(),
+    };
+    
+    // Dodaj tylko zdefiniowane pola
+    Object.keys(productData).forEach(key => {
+      const value = (productData as any)[key];
+      if (value !== undefined) {
+        cleanData[key] = value;
+      }
     });
+    
+    await updateDoc(docRef, cleanData);
   } catch (error) {
     console.error('Error updating product:', error);
     throw new Error('Nie udało się zaktualizować produktu');
