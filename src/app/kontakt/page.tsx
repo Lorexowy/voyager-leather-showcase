@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -32,7 +32,8 @@ const contactInfo = [
   }
 ];
 
-export default function ContactPage() {
+// Komponent który używa useSearchParams musi być w Suspense
+function ContactFormWrapper() {
   const searchParams = useSearchParams();
   const [selectedProduct, setSelectedProduct] = useState<string>('');
 
@@ -43,6 +44,10 @@ export default function ContactPage() {
     }
   }, [searchParams]);
 
+  return <ContactForm selectedProductId={selectedProduct} />;
+}
+
+export default function ContactPage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -96,7 +101,7 @@ export default function ContactPage() {
             })}
           </div>
 
-          {/* Contact Form - minimal */}
+          {/* Contact Form - WRAPPED IN SUSPENSE */}
           <div className="lg:col-span-3">
             <div className="bg-gray-50 p-12">
               <h2 className="text-2xl font-light text-gray-900 mb-2 tracking-tight">
@@ -106,7 +111,17 @@ export default function ContactPage() {
                 Wypełnij formularz poniżej, a skontaktujemy się z Tobą w najkrótszym możliwym czasie.
               </p>
               
-              <ContactForm selectedProductId={selectedProduct} />
+              <Suspense fallback={
+                <div className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                  <div className="h-10 bg-gray-200 rounded mb-6"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+                  <div className="h-10 bg-gray-200 rounded mb-6"></div>
+                  <div className="h-32 bg-gray-200 rounded mb-6"></div>
+                </div>
+              }>
+                <ContactFormWrapper />
+              </Suspense>
             </div>
           </div>
         </div>
