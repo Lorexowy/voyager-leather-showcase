@@ -14,7 +14,7 @@ import {
 import { db } from './firebase';
 import { COLLECTIONS, FirestoreProduct, convertFirestoreProduct } from './firestore-types';
 import { Product, ProductCategory } from '@/types';
-
+import { deleteMultipleImages } from './storage';
 // Dodaj nowy produkt
 export const addProduct = async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
   try {
@@ -190,7 +190,25 @@ export const updateProduct = async (productId: string, productData: Partial<Omit
 // Usuń produkt
 export const deleteProduct = async (productId: string): Promise<void> => {
   try {
+    // Najpierw pobierz dane produktu żeby mieć URLs zdjęć
+    const product = await getProductById(productId);
+    
+    if (product && product.images && product.images.length > 0) {
+      console.log(`Deleting ${product.images.length} images for product ${productId}`);
+      
+      // Usuń wszystkie zdjęcia z Firebase Storage
+      try {
+        await deleteMultipleImages(product.images);
+        console.log('Images deleted successfully from storage');
+      } catch (storageError) {
+        console.error('Error deleting images from storage:', storageError);
+        // Kontynuuj mimo błędu z storage - usuń przynajmniej rekord produktu
+      }
+    }
+    
+    // Usuń rekord produktu z Firestore
     await deleteDoc(doc(db, COLLECTIONS.PRODUCTS, productId));
+    console.log('Product deleted successfully from Firestore');
   } catch (error) {
     console.error('Error deleting product:', error);
     throw new Error('Nie udało się usunąć produktu');

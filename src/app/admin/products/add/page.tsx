@@ -61,6 +61,7 @@ export default function AddProductPage() {
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [mainImageIndex, setMainImageIndex] = useState(0);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [uploadComplete, setUploadComplete] = useState(false);
   const router = useRouter();
 
   const {
@@ -94,6 +95,21 @@ export default function AddProductPage() {
   const watchedCategory = watch('category');
   const watchedDimensionsEnabled = watch('dimensionsEnabled');
 
+  // Debug upload state
+  useEffect(() => {
+    console.log('🔍 Debug upload state:', {
+      uploadedImages: uploadedImages.map(img => ({
+        hasUrl: !!img.uploadedUrl,
+        isUploading: img.isUploading,
+        progress: img.progress,
+        hasError: !!img.error
+      })),
+      isUploadingImages,
+      stillUploading: uploadedImages.some(img => img.isUploading),
+      validCount: uploadedImages.filter(img => img.uploadedUrl && !img.error).length
+    });
+  }, [uploadedImages, isUploadingImages]);
+
   // Sprawdź autoryzację
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -126,67 +142,97 @@ export default function AddProductPage() {
   }, []);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
+  const files = event.target.files;
+  if (!files || files.length === 0) return;
 
-    const newImages: UploadedImage[] = Array.from(files).map(file => ({
-      file,
-      previewUrl: createPreviewUrl(file),
-      isUploading: true,
-      progress: 0
-    }));
+  console.log('🚀 Starting upload process...');
 
-    setUploadedImages(prev => [...prev, ...newImages]);
-    setIsUploadingImages(true);
+  const newImages: UploadedImage[] = Array.from(files).map(file => ({
+    file,
+    previewUrl: createPreviewUrl(file),
+    isUploading: true,
+    progress: 0
+  }));
 
-    try {
-      // Upload wszystkich obrazów
-      const filesToUpload = Array.from(files);
-      
-      await uploadMultipleImages(
-        filesToUpload,
-        (fileIndex, progress) => {
-          // Update progress dla konkretnego pliku
-          setUploadedImages(prev => {
-            const updated = [...prev];
-            const targetIndex = prev.length - files.length + fileIndex;
-            if (updated[targetIndex]) {
-              updated[targetIndex] = {
-                ...updated[targetIndex],
-                progress: progress.progress,
-                isUploading: !progress.isComplete,
-                uploadedUrl: progress.url,
-                error: progress.error
+  setUploadedImages(prev => [...prev, ...newImages]);
+  setIsUploadingImages(true);
+  setUploadComplete(false);
+
+  try {
+    const filesToUpload = Array.from(files);
+    const startingIndex = uploadedImages.length; // Zapamiętaj startowy indeks
+    
+    await uploadMultipleImages(
+      filesToUpload,
+      (fileIndex, progress) => {
+        console.log(`📊 Progress for file ${fileIndex}:`, progress);
+        
+        // Update progress dla konkretnego pliku
+        setUploadedImages(prev => {
+          const updated = [...prev];
+          const targetIndex = startingIndex + fileIndex; // Użyj zapamiętanego indeksu
+          
+          if (updated[targetIndex]) {
+            console.log(`📝 Updating image at index ${targetIndex}:`, {
+              oldIsUploading: updated[targetIndex].isUploading,
+              newIsUploading: !progress.isComplete,
+              progress: progress.progress,
+              hasUrl: !!progress.url
+            });
+            
+            updated[targetIndex] = {
+              ...updated[targetIndex],
+              progress: progress.progress,
+              isUploading: !progress.isComplete, // KLUCZOWE: ustaw na false gdy complete
+              uploadedUrl: progress.url,
+              error: progress.error
+            };
+          }
+          
+          return updated;
+        });
+      },
+      (results) => {
+        console.log('🎉 All uploads finished:', results);
+        
+        // Dodatkowe zabezpieczenie - upewnij się że wszystkie obrazy mają isUploading: false
+        setUploadedImages(prev => {
+          const updated = [...prev];
+          for (let i = startingIndex; i < startingIndex + files.length; i++) {
+            if (updated[i]) {
+              updated[i] = {
+                ...updated[i],
+                isUploading: false // FORCE wszystkie na false
               };
             }
-            return updated;
-          });
-        },
-        (results) => {
-          // Wszystkie pliki zakończone
-          console.log('Upload results:', results);
-          setIsUploadingImages(false);
-          
-          const successCount = results.filter(r => r.url).length;
-          const errorCount = results.filter(r => r.error).length;
-          
-          if (successCount > 0) {
-            toast.success(`Dodano ${successCount} zdjęć pomyślnie!`);
           }
-          if (errorCount > 0) {
-            toast.error(`${errorCount} zdjęć nie udało się dodać`);
-          }
+          return updated;
+        });
+        
+        setIsUploadingImages(false);
+        setUploadComplete(true);
+        
+        const successCount = results.filter(r => r.url).length;
+        const errorCount = results.filter(r => r.error).length;
+        
+        if (successCount > 0) {
+          toast.success(`Dodano ${successCount} zdjęć pomyślnie!`);
         }
-      );
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      toast.error('Wystąpił błąd podczas upload\'u zdjęć');
-      setIsUploadingImages(false);
-    }
+        if (errorCount > 0) {
+          toast.error(`${errorCount} zdjęć nie udało się dodać`);
+        }
+      }
+    );
+  } catch (error: any) {
+    console.error('💥 Upload error:', error);
+    toast.error('Wystąpił błąd podczas upload\'u zdjęć');
+    setIsUploadingImages(false);
+    setUploadComplete(false);
+  }
 
-    // Reset input
-    event.target.value = '';
-  };
+  // Reset input
+  event.target.value = '';
+};
 
   const removeImage = async (index: number) => {
     const imageToRemove = uploadedImages[index];
@@ -324,7 +370,8 @@ export default function AddProductPage() {
   }
 
   const validUploadedImages = uploadedImages.filter(img => img.uploadedUrl && !img.error);
-  const canSubmit = isValid && !isLoading && !isUploadingImages && validUploadedImages.length > 0;
+  const stillUploading = uploadedImages.some(img => img.isUploading);
+  const canSubmit = isValid && !isLoading && !isUploadingImages && !stillUploading && validUploadedImages.length > 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -807,7 +854,7 @@ export default function AddProductPage() {
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Zapisywanie...
                   </>
-                ) : isUploadingImages ? (
+                ) : (isUploadingImages || stillUploading) ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Upload zdjęć...
@@ -826,8 +873,8 @@ export default function AddProductPage() {
           {!canSubmit && uploadedImages.length > 0 && (
             <div className="text-center">
               <p className="text-sm text-gray-500 font-light">
-                {isUploadingImages && 'Poczekaj aż wszystkie zdjęcia zostaną dodane...'}
-                {!isUploadingImages && validUploadedImages.length === 0 && 'Dodaj co najmniej jedno zdjęcie, aby zapisać produkt.'}
+                {(isUploadingImages || stillUploading) && 'Poczekaj aż wszystkie zdjęcia zostaną dodane...'}
+                {!isUploadingImages && !stillUploading && validUploadedImages.length === 0 && 'Dodaj co najmniej jedno zdjęcie, aby zapisać produkt.'}
               </p>
             </div>
           )}

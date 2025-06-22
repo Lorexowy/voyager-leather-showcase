@@ -72,7 +72,7 @@ export function compressImage(
   });
 }
 
-// Upload pojedynczego obrazu - naprawiony
+// Upload pojedynczego obrazu - naprawiona wersja
 export function uploadImage(
   file: File,
   onProgress?: (progress: UploadProgress) => void,
@@ -100,22 +100,34 @@ export function uploadImage(
       // Timeout - jeśli upload nie zakończy się w 2 minuty
       const timeoutId = setTimeout(() => {
         uploadTask.cancel();
-        reject(new Error('Upload timeout - przekroczono 2 minuty'));
+        const timeoutError = new Error('Upload timeout - przekroczono 2 minuty');
+        
+        if (onProgress) {
+          onProgress({
+            progress: 0,
+            isComplete: true,
+            error: timeoutError.message
+          });
+        }
+        
+        reject(timeoutError);
       }, 120000); // 2 minuty
 
       uploadTask.on(
         'state_changed',
         (snapshot) => {
           // Progress callback
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
           
           console.log(`Upload progress: ${progress}%`, {
             bytesTransferred: snapshot.bytesTransferred,
             totalBytes: snapshot.totalBytes,
-            state: snapshot.state
+            state: snapshot.state,
+            fileName
           });
 
-          if (onProgress) {
+          // Wywołaj callback tylko gdy progress się zmienił i nie jest to finalne ukończenie
+          if (onProgress && snapshot.state === 'running') {
             onProgress({
               progress,
               isComplete: false
@@ -125,7 +137,7 @@ export function uploadImage(
         (error) => {
           // Error callback
           clearTimeout(timeoutId);
-          console.error('Upload error:', error);
+          console.error('Upload error:', error, { fileName });
           
           if (onProgress) {
             onProgress({
@@ -142,15 +154,14 @@ export function uploadImage(
           clearTimeout(timeoutId);
           
           try {
-            console.log('Upload completed, getting download URL...');
+            console.log('Upload completed successfully, getting download URL...', { fileName });
             
-            // ⚡ NAPRAWKA: Dodaj małe opóźnienie przed getDownloadURL
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
+            // Bezpośrednio pobierz URL
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
             
-            console.log('Download URL obtained:', downloadURL);
+            console.log('Download URL obtained successfully:', downloadURL);
 
+            // Oznacz jako ukończone z URL
             if (onProgress) {
               onProgress({
                 progress: 100,
@@ -161,7 +172,7 @@ export function uploadImage(
 
             resolve(downloadURL);
           } catch (urlError) {
-            console.error('Error getting download URL:', urlError);
+            console.error('Error getting download URL:', urlError, { fileName });
             
             if (onProgress) {
               onProgress({
@@ -177,12 +188,22 @@ export function uploadImage(
       );
     } catch (error) {
       console.error('Upload preparation error:', error);
+      
+      if (onProgress) {
+        onProgress({
+          progress: 0,
+          isComplete: true,
+          error: error instanceof Error ? error.message : 'Błąd przygotowania uploadu'
+        });
+      }
+      
       reject(error);
     }
   });
 }
 
-// Upload wielu obrazów - naprawiony
+// Upload wielu obrazów - naprawiona wersja
+// Upload wielu obrazów - ostateczna naprawka
 export async function uploadMultipleImages(
   files: File[],
   onProgress: (fileIndex: number, progress: UploadProgress) => void,
@@ -192,40 +213,60 @@ export async function uploadMultipleImages(
 ): Promise<Array<{ url?: string; error?: string }>> {
   console.log(`Starting upload of ${files.length} files...`);
   
-  const results: Array<{ url?: string; error?: string }> = [];
-  const uploadPromises: Promise<void>[] = [];
-
-  files.forEach((file, index) => {
-    const uploadPromise = new Promise<void>((resolve) => {
+  const results: Array<{ url?: string; error?: string }> = new Array(files.length);
+  let completedUploads = 0;
+  
+  const promises = files.map((file, index) => {
+    return new Promise<void>((resolve) => {
       uploadImage(
         file,
         (progress) => {
+          // Wywołaj callback progress
           onProgress(index, progress);
+          
+          // Sprawdź czy upload się zakończył
+          if (progress.isComplete) {
+            completedUploads++;
+            
+            if (progress.url) {
+              results[index] = { url: progress.url };
+            } else if (progress.error) {
+              results[index] = { error: progress.error };
+            }
+            
+            console.log(`File ${index} completed. Total completed: ${completedUploads}/${files.length}`);
+            
+            // Sprawdź czy to ostatni plik
+            if (completedUploads === files.length) {
+              console.log('All uploads completed! Calling onComplete...');
+              // Małe opóźnienie żeby interfejs się zaktualizował
+              setTimeout(() => {
+                onComplete(results);
+              }, 100);
+            }
+            
+            resolve();
+          }
         },
         compressionOptions,
         folderPath
-      )
-      .then((url) => {
-        console.log(`File ${index} uploaded successfully:`, url);
-        results[index] = { url };
-        resolve();
-      })
-      .catch((error) => {
-        console.error(`File ${index} upload failed:`, error);
+      ).catch((error) => {
+        console.error(`Upload promise rejected for file ${index}:`, error);
+        completedUploads++;
         results[index] = { error: error.message };
+        
+        if (completedUploads === files.length) {
+          setTimeout(() => {
+            onComplete(results);
+          }, 100);
+        }
+        
         resolve();
       });
     });
-
-    uploadPromises.push(uploadPromise);
   });
 
-  // Poczekaj na wszystkie upload'y
-  await Promise.all(uploadPromises);
-  
-  console.log('All uploads completed:', results);
-  onComplete(results);
-  
+  await Promise.all(promises);
   return results;
 }
 

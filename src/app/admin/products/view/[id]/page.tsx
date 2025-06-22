@@ -19,7 +19,9 @@ import {
   Eye,
   EyeOff,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Product, ProductCategory, CATEGORIES, formatDimensions } from '@/types';
@@ -84,6 +86,31 @@ export default function AdminViewProductPage() {
 
     loadProduct();
   }, [params.id, router, isAuthorized]);
+
+  // Aktualizuj currentImageIndex gdy produkt się załaduje
+  useEffect(() => {
+    if (product && product.mainImage) {
+      const mainIndex = product.images.indexOf(product.mainImage);
+      setCurrentImageIndex(mainIndex >= 0 ? mainIndex : 0);
+    }
+  }, [product]);
+
+  // Funkcje nawigacji galerii
+  const nextImage = () => {
+    if (product) {
+      setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (product) {
+      setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+    }
+  };
+
+  const selectImage = (index: number) => {
+    setCurrentImageIndex(index);
+  };
 
   const handleDeleteProduct = async () => {
     if (!product) return;
@@ -221,38 +248,104 @@ export default function AdminViewProductPage() {
               <h2 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Zdjęcia produktu</h2>
               
               {/* Main Image */}
-              <div className="aspect-square bg-gray-100 mb-4 relative overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-center">
+              <div className="aspect-square bg-gray-100 mb-4 relative overflow-hidden rounded-lg">
+                {product.images[currentImageIndex] ? (
+                  <img
+                    src={product.images[currentImageIndex]}
+                    alt={`${product.name} - zdjęcie ${currentImageIndex + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback jeśli zdjęcie się nie załaduje
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const fallback = target.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                
+                {/* Fallback placeholder */}
+                <div 
+                  className={`absolute inset-0 flex items-center justify-center ${
+                    product.images[currentImageIndex] ? 'hidden' : 'flex'
+                  }`}
+                >
                   <div className="text-center text-gray-500">
                     <Package className="w-16 h-16 mx-auto mb-2" />
                     <p className="font-medium">Główne zdjęcie</p>
                     <p className="text-sm">Zdjęcie {currentImageIndex + 1} z {product.images.length}</p>
                   </div>
                 </div>
+
+                {/* Navigation arrows */}
+                {product.images.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevImage}
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-gray-700" />
+                    </button>
+                    
+                    <button
+                      onClick={nextImage}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors"
+                    >
+                      <ChevronRight className="w-5 h-5 text-gray-700" />
+                    </button>
+                  </>
+                )}
+
+                {/* Image counter */}
+                {product.images.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-black/50 text-white text-sm rounded-full">
+                    {currentImageIndex + 1} / {product.images.length}
+                  </div>
+                )}
               </div>
 
               {/* Thumbnails */}
               {product.images.length > 1 && (
                 <div className="grid grid-cols-4 gap-3">
-                  {product.images.map((image, index) => (
+                  {product.images.map((imageUrl, index) => (
                     <button
                       key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`aspect-square bg-gray-100 border-2 transition-all ${
+                      onClick={() => selectImage(index)}
+                      className={`aspect-square bg-gray-100 border-2 rounded-lg overflow-hidden transition-all ${
                         currentImageIndex === index 
-                          ? 'border-gray-900' 
+                          ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-2' 
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-gray-500 text-sm font-medium">
-                          {index + 1}
-                        </span>
-                      </div>
+                      <img
+                        src={imageUrl}
+                        alt={`${product.name} - miniatura ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback dla miniaturek
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = `
+                              <div class="w-full h-full flex items-center justify-center bg-gray-200">
+                                <span class="text-gray-500 text-sm font-medium">${index + 1}</span>
+                              </div>
+                            `;
+                          }
+                        }}
+                      />
                     </button>
                   ))}
                 </div>
               )}
+
+              {/* Images info */}
+              <div className="mt-4 text-xs text-gray-500 font-light space-y-1">
+                <p>Łącznie zdjęć: {product.images.length}</p>
+                <p>Główne zdjęcie: {product.images.indexOf(product.mainImage) + 1}</p>
+                <p>Obecnie wyświetlane: {currentImageIndex + 1}</p>
+              </div>
             </div>
           </div>
 
@@ -264,7 +357,7 @@ export default function AdminViewProductPage() {
                 <h2 className="text-lg font-light text-gray-900 tracking-tight">Informacje podstawowe</h2>
                 <button
                   onClick={handleToggleProductStatus}
-                  className={`inline-flex items-center px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
+                  className={`inline-flex items-center px-3 py-1 text-xs font-medium transition-colors cursor-pointer rounded-full ${
                     product.isActive 
                       ? 'bg-green-100 text-green-800 hover:bg-green-200' 
                       : 'bg-red-100 text-red-800 hover:bg-red-200'
@@ -287,7 +380,7 @@ export default function AdminViewProductPage() {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-light text-gray-900 mb-2">{product.name}</h3>
-                  <span className={`inline-flex px-2 py-1 text-xs font-medium ${
+                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                     product.category === 'as-aleksandra-sopel' 
                       ? 'bg-gray-900 text-white' 
                       : 'bg-gray-100 text-gray-800'
@@ -327,7 +420,7 @@ export default function AdminViewProductPage() {
                       {product.availableColors.map((color, index) => (
                         <span 
                           key={index}
-                          className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-light"
+                          className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-light rounded"
                         >
                           {color}
                         </span>
@@ -428,7 +521,7 @@ export default function AdminViewProductPage() {
         onClose={() => setShowDeleteDialog(false)}
         onConfirm={handleDeleteProduct}
         title="Usuń produkt"
-        message={`Czy na pewno chcesz usunąć produkt "${product.name}"? Tej operacji nie można cofnąć.`}
+        message={`Czy na pewno chcesz usunąć produkt "${product.name}"? Tej operacji nie można cofnąć. Wszystkie zdjęcia produktu zostaną również usunięte.`}
         confirmText="Usuń produkt"
         cancelText="Anuluj"
         type="danger"
