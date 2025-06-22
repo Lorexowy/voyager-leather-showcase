@@ -1,14 +1,14 @@
 import { 
+  getStorage, 
   ref, 
-  uploadBytes, 
+  uploadBytesResumable, 
   getDownloadURL, 
   deleteObject,
-  uploadBytesResumable,
   UploadTaskSnapshot 
 } from 'firebase/storage';
 import { storage } from './firebase';
 
-// Typy dla upload'u
+// Typy dla progress tracking
 export interface UploadProgress {
   progress: number;
   isComplete: boolean;
@@ -16,24 +16,12 @@ export interface UploadProgress {
   error?: string;
 }
 
-export interface ImageUploadOptions {
-  maxWidth?: number;
-  maxHeight?: number;
-  quality?: number;
-  format?: 'jpeg' | 'webp';
-}
-
-// Funkcja do kompresji/resize obrazu
-export const compressImage = async (
+// Kompresja obrazów
+export function compressImage(
   file: File, 
-  options: ImageUploadOptions = {}
-): Promise<File> => {
-  const {
-    maxWidth = 1200,
-    maxHeight = 1200,
-    quality = 0.8,
-    format = 'jpeg'
-  } = options;
+  options: { maxWidth?: number; maxHeight?: number; quality?: number } = {}
+): Promise<File> {
+  const { maxWidth = 1200, maxHeight = 1200, quality = 0.8 } = options;
 
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
@@ -44,24 +32,30 @@ export const compressImage = async (
       // Oblicz nowe wymiary zachowując proporcje
       let { width, height } = img;
       
-      if (width > maxWidth || height > maxHeight) {
-        const ratio = Math.min(maxWidth / width, maxHeight / height);
-        width *= ratio;
-        height *= ratio;
+      if (width > height) {
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = (width * maxHeight) / height;
+          height = maxHeight;
+        }
       }
 
+      // Ustaw rozmiar canvas
       canvas.width = width;
       canvas.height = height;
 
-      // Rysuj obraz na canvas
+      // Narysuj i skompresuj obraz
       ctx.drawImage(img, 0, 0, width, height);
-
-      // Konwertuj do blob
+      
       canvas.toBlob(
         (blob) => {
           if (blob) {
             const compressedFile = new File([blob], file.name, {
-              type: `image/${format}`,
+              type: file.type,
               lastModified: Date.now(),
             });
             resolve(compressedFile);
@@ -69,217 +63,216 @@ export const compressImage = async (
             resolve(file); // Fallback do oryginalnego pliku
           }
         },
-        `image/${format}`,
+        file.type,
         quality
       );
     };
 
     img.src = URL.createObjectURL(file);
   });
-};
+}
 
-// Funkcja do walidacji pliku obrazu
-export const validateImageFile = (file: File): { isValid: boolean; error?: string } => {
+// Upload pojedynczego obrazu - naprawiony
+export function uploadImage(
+  file: File,
+  onProgress?: (progress: UploadProgress) => void,
+  compressionOptions?: { maxWidth?: number; maxHeight?: number; quality?: number },
+  folderPath: string = 'products'
+): Promise<string> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Kompresuj obraz jeśli podano opcje
+      const fileToUpload = compressionOptions 
+        ? await compressImage(file, compressionOptions)
+        : file;
+
+      // Utwórz unikalną nazwę pliku
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substring(2, 15);
+      const fileName = `${timestamp}_${randomStr}_${fileToUpload.name}`;
+      
+      // Utwórz referencję
+      const storageRef = ref(storage, `${folderPath}/${fileName}`);
+      
+      // Rozpocznij upload
+      const uploadTask = uploadBytesResumable(storageRef, fileToUpload);
+
+      // Timeout - jeśli upload nie zakończy się w 2 minuty
+      const timeoutId = setTimeout(() => {
+        uploadTask.cancel();
+        reject(new Error('Upload timeout - przekroczono 2 minuty'));
+      }, 120000); // 2 minuty
+
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          // Progress callback
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          
+          console.log(`Upload progress: ${progress}%`, {
+            bytesTransferred: snapshot.bytesTransferred,
+            totalBytes: snapshot.totalBytes,
+            state: snapshot.state
+          });
+
+          if (onProgress) {
+            onProgress({
+              progress,
+              isComplete: false
+            });
+          }
+        },
+        (error) => {
+          // Error callback
+          clearTimeout(timeoutId);
+          console.error('Upload error:', error);
+          
+          if (onProgress) {
+            onProgress({
+              progress: 0,
+              isComplete: true,
+              error: error.message
+            });
+          }
+          
+          reject(error);
+        },
+        async () => {
+          // Success callback
+          clearTimeout(timeoutId);
+          
+          try {
+            console.log('Upload completed, getting download URL...');
+            
+            // ⚡ NAPRAWKA: Dodaj małe opóźnienie przed getDownloadURL
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            
+            console.log('Download URL obtained:', downloadURL);
+
+            if (onProgress) {
+              onProgress({
+                progress: 100,
+                isComplete: true,
+                url: downloadURL
+              });
+            }
+
+            resolve(downloadURL);
+          } catch (urlError) {
+            console.error('Error getting download URL:', urlError);
+            
+            if (onProgress) {
+              onProgress({
+                progress: 100,
+                isComplete: true,
+                error: 'Nie udało się pobrać URL zdjęcia'
+              });
+            }
+            
+            reject(urlError);
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Upload preparation error:', error);
+      reject(error);
+    }
+  });
+}
+
+// Upload wielu obrazów - naprawiony
+export async function uploadMultipleImages(
+  files: File[],
+  onProgress: (fileIndex: number, progress: UploadProgress) => void,
+  onComplete: (results: Array<{ url?: string; error?: string }>) => void,
+  compressionOptions?: { maxWidth?: number; maxHeight?: number; quality?: number },
+  folderPath: string = 'products'
+): Promise<Array<{ url?: string; error?: string }>> {
+  console.log(`Starting upload of ${files.length} files...`);
+  
+  const results: Array<{ url?: string; error?: string }> = [];
+  const uploadPromises: Promise<void>[] = [];
+
+  files.forEach((file, index) => {
+    const uploadPromise = new Promise<void>((resolve) => {
+      uploadImage(
+        file,
+        (progress) => {
+          onProgress(index, progress);
+        },
+        compressionOptions,
+        folderPath
+      )
+      .then((url) => {
+        console.log(`File ${index} uploaded successfully:`, url);
+        results[index] = { url };
+        resolve();
+      })
+      .catch((error) => {
+        console.error(`File ${index} upload failed:`, error);
+        results[index] = { error: error.message };
+        resolve();
+      });
+    });
+
+    uploadPromises.push(uploadPromise);
+  });
+
+  // Poczekaj na wszystkie upload'y
+  await Promise.all(uploadPromises);
+  
+  console.log('All uploads completed:', results);
+  onComplete(results);
+  
+  return results;
+}
+
+// Usuwanie obrazów
+export async function deleteImage(url: string): Promise<void> {
+  try {
+    const imageRef = ref(storage, url);
+    await deleteObject(imageRef);
+    console.log('Image deleted successfully:', url);
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    throw error;
+  }
+}
+
+export async function deleteMultipleImages(urls: string[]): Promise<void> {
+  const deletePromises = urls.map(url => deleteImage(url));
+  await Promise.all(deletePromises);
+}
+
+// Utility functions
+export function createPreviewUrl(file: File): string {
+  return URL.createObjectURL(file);
+}
+
+export function revokePreviewUrl(url: string): void {
+  URL.revokeObjectURL(url);
+}
+
+// Walidacja plików
+export function validateImageFile(file: File): { isValid: boolean; error?: string } {
   // Sprawdź typ pliku
   if (!file.type.startsWith('image/')) {
     return { isValid: false, error: 'Plik musi być obrazem' };
   }
 
-  // Sprawdź dozwolone formaty
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-  if (!allowedTypes.includes(file.type)) {
-    return { isValid: false, error: 'Dozwolone formaty: JPG, PNG, WEBP' };
-  }
-
-  // Sprawdź rozmiar pliku (max 10MB)
+  // Sprawdź rozmiar (max 10MB)
   const maxSize = 10 * 1024 * 1024; // 10MB
   if (file.size > maxSize) {
-    return { isValid: false, error: 'Plik nie może być większy niż 10MB' };
+    return { isValid: false, error: 'Plik jest za duży (max 10MB)' };
+  }
+
+  // Sprawdź obsługiwane formaty
+  const supportedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+  if (!supportedTypes.includes(file.type)) {
+    return { isValid: false, error: 'Nieobsługiwany format pliku' };
   }
 
   return { isValid: true };
-};
-
-// Funkcja do generowania unikalnej nazwy pliku
-export const generateFileName = (originalName: string, productId?: string): string => {
-  const timestamp = Date.now();
-  const randomString = Math.random().toString(36).substring(2, 8);
-  const extension = originalName.split('.').pop()?.toLowerCase() || 'jpg';
-  
-  if (productId) {
-    return `products/${productId}/${timestamp}_${randomString}.${extension}`;
-  }
-  
-  return `products/temp/${timestamp}_${randomString}.${extension}`;
-};
-
-// Główna funkcja upload'u obrazu
-export const uploadImage = async (
-  file: File,
-  onProgress?: (progress: UploadProgress) => void,
-  options: ImageUploadOptions = {},
-  productId?: string
-): Promise<string> => {
-  try {
-    // Walidacja pliku
-    const validation = validateImageFile(file);
-    if (!validation.isValid) {
-      throw new Error(validation.error);
-    }
-
-    // Kompresja obrazu
-    onProgress?.({ progress: 5, isComplete: false });
-    const compressedFile = await compressImage(file, options);
-    
-    // Generuj ścieżkę pliku
-    const fileName = generateFileName(file.name, productId);
-    const storageRef = ref(storage, fileName);
-
-    onProgress?.({ progress: 10, isComplete: false });
-
-    // Upload z progress tracking
-    return new Promise((resolve, reject) => {
-      const uploadTask = uploadBytesResumable(storageRef, compressedFile);
-
-      uploadTask.on(
-        'state_changed',
-        (snapshot: UploadTaskSnapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 90 + 10;
-          onProgress?.({ progress, isComplete: false });
-        },
-        (error) => {
-          console.error('Upload error:', error);
-          onProgress?.({ progress: 0, isComplete: false, error: error.message });
-          reject(new Error(`Błąd podczas upload'u: ${error.message}`));
-        },
-        async () => {
-          try {
-            // Upload zakończony - pobierz URL
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            onProgress?.({ progress: 100, isComplete: true, url: downloadURL });
-            resolve(downloadURL);
-          } catch (error: any) {
-            reject(new Error(`Błąd podczas pobierania URL: ${error.message}`));
-          }
-        }
-      );
-    });
-
-  } catch (error: any) {
-    onProgress?.({ progress: 0, isComplete: false, error: error.message });
-    throw error;
-  }
-};
-
-// Funkcja do upload'u wielu obrazów
-export const uploadMultipleImages = async (
-  files: File[],
-  onProgress?: (fileIndex: number, progress: UploadProgress) => void,
-  onComplete?: (results: { url?: string; error?: string; fileName: string }[]) => void,
-  options: ImageUploadOptions = {},
-  productId?: string
-): Promise<string[]> => {
-  const results: { url?: string; error?: string; fileName: string }[] = [];
-  const uploadedUrls: string[] = [];
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    
-    try {
-      const url = await uploadImage(
-        file,
-        (progress) => onProgress?.(i, progress),
-        options,
-        productId
-      );
-      
-      results.push({ url, fileName: file.name });
-      uploadedUrls.push(url);
-    } catch (error: any) {
-      console.error(`Error uploading ${file.name}:`, error);
-      results.push({ error: error.message, fileName: file.name });
-    }
-  }
-
-  onComplete?.(results);
-  return uploadedUrls;
-};
-
-// Funkcja do usuwania obrazu
-export const deleteImage = async (imageUrl: string): Promise<void> => {
-  try {
-    // Wyciągnij ścieżkę z URL
-    const url = new URL(imageUrl);
-    const pathMatch = url.pathname.match(/\/o\/(.+)\?/);
-    
-    if (!pathMatch) {
-      throw new Error('Nieprawidłowy URL obrazu');
-    }
-
-    const imagePath = decodeURIComponent(pathMatch[1]);
-    const imageRef = ref(storage, imagePath);
-    
-    await deleteObject(imageRef);
-    console.log('Image deleted successfully:', imagePath);
-  } catch (error: any) {
-    console.error('Error deleting image:', error);
-    throw new Error(`Nie udało się usunąć obrazu: ${error.message}`);
-  }
-};
-
-// Funkcja do usuwania wielu obrazów
-export const deleteMultipleImages = async (imageUrls: string[]): Promise<void> => {
-  const deletePromises = imageUrls.map(url => 
-    deleteImage(url).catch(error => 
-      console.error(`Failed to delete image ${url}:`, error)
-    )
-  );
-  
-  await Promise.all(deletePromises);
-};
-
-// Funkcja pomocnicza do utworzenia URL podglądu pliku
-export const createPreviewUrl = (file: File): string => {
-  return URL.createObjectURL(file);
-};
-
-// Funkcja do zwolnienia URL podglądu
-export const revokePreviewUrl = (url: string): void => {
-  URL.revokeObjectURL(url);
-};
-
-// Funkcja do przeniesienia obrazów z temp do produktu
-export const moveImagesToProduct = async (
-  tempUrls: string[],
-  productId: string
-): Promise<string[]> => {
-  const newUrls: string[] = [];
-
-  for (const tempUrl of tempUrls) {
-    try {
-      // Pobierz blob z temp URL
-      const response = await fetch(tempUrl);
-      const blob = await response.blob();
-      
-      // Stwórz nowy plik
-      const file = new File([blob], 'image.jpg', { type: blob.type });
-      
-      // Upload do nowej lokalizacji
-      const newUrl = await uploadImage(file, undefined, {}, productId);
-      newUrls.push(newUrl);
-      
-      // Usuń stary plik (opcjonalne - temp pliki mogą być czyszczone automatycznie)
-      try {
-        await deleteImage(tempUrl);
-      } catch (error) {
-        console.warn('Could not delete temp image:', error);
-      }
-    } catch (error) {
-      console.error('Error moving image:', error);
-      // W przypadku błędu, zachowaj oryginalny URL
-      newUrls.push(tempUrl);
-    }
-  }
-
-  return newUrls;
-};
+}
