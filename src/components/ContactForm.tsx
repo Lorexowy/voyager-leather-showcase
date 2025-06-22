@@ -1,28 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Send, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ContactForm as ContactFormType } from '@/types';
 import { submitContactForm } from '@/lib/contact';
+import { getActiveProducts } from '@/lib/products';
+import { Product } from '@/types';
 
 interface ContactFormProps {
   selectedProductId?: string;
 }
 
-// Mock products for dropdown - później zastąpimy danymi z Firebase
-const mockProducts = [
-  { id: '1', name: 'Elegancka Torebka Damska' },
-  { id: '2', name: 'Biznesowy Plecak Skórzany' },
-  { id: '3', name: 'Klasyczny Pasek Męski' },
-  { id: '4', name: 'AS | Premium Portfel' },
-  { id: '5', name: 'Personalizowany Organizer' },
-];
-
 export default function ContactForm({ selectedProductId }: ContactFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
   const {
     register,
@@ -39,6 +34,23 @@ export default function ContactForm({ selectedProductId }: ContactFormProps) {
 
   const selectedProduct = watch('productId');
 
+  // Załaduj prawdziwe produkty z Firebase
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const activeProducts = await getActiveProducts();
+        setProducts(activeProducts);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        toast.error('Nie udało się załadować listy produktów');
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   const onSubmit = async (data: ContactFormType) => {
     setIsSubmitting(true);
     setSubmitStatus('idle');
@@ -46,7 +58,7 @@ export default function ContactForm({ selectedProductId }: ContactFormProps) {
     try {
       // Znajdź nazwę produktu jeśli wybrano produkt
       const selectedProductName = data.productId 
-        ? mockProducts.find(p => p.id === data.productId)?.name 
+        ? products.find(p => p.id === data.productId)?.name 
         : undefined;
 
       const formDataWithProduct = {
@@ -72,18 +84,6 @@ export default function ContactForm({ selectedProductId }: ContactFormProps) {
     }
   };
 
-  // Funkcja do wysyłania EmailJS (dodasz później)
-  const sendEmailNotification = async (formData: ContactFormType & { productName?: string }) => {
-    // Tutaj będzie integracja z EmailJS
-    // emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
-    //   from_name: formData.name,
-    //   from_email: formData.email,
-    //   phone: formData.phone,
-    //   message: formData.message,
-    //   product_name: formData.productName,
-    // });
-  };
-
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Product selection */}
@@ -95,18 +95,21 @@ export default function ContactForm({ selectedProductId }: ContactFormProps) {
           id="productId"
           {...register('productId')}
           className="w-full px-4 py-4 border border-gray-200 focus:border-gray-900 focus:outline-none bg-white text-gray-900 font-light transition-colors"
+          disabled={isLoadingProducts}
         >
-          <option value="">Wybierz produkt (opcjonalnie)</option>
-          {mockProducts.map((product) => (
+          <option value="">
+            {isLoadingProducts ? 'Ładowanie produktów...' : 'Wybierz produkt (opcjonalnie)'}
+          </option>
+          {products.map((product) => (
             <option key={product.id} value={product.id}>
-              {product.name}
+              {product.name} - {product.category === 'as-aleksandra-sopel' ? 'AS Premium' : product.category}
             </option>
           ))}
         </select>
-        {selectedProduct && (
+        {selectedProduct && !isLoadingProducts && (
           <p className="mt-3 text-sm text-gray-600 font-light">
             Wybrany produkt: <span className="font-medium text-gray-900">
-              {mockProducts.find(p => p.id === selectedProduct)?.name}
+              {products.find(p => p.id === selectedProduct)?.name}
             </span>
           </p>
         )}

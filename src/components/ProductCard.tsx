@@ -11,6 +11,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const getCategoryDisplayName = (category: string) => {
     switch (category) {
@@ -38,18 +39,28 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
       )}
 
-      {/* Image - clean */}
+      {/* Image - ZAKTUALIZOWANE do prawdziwych obrazów */}
       <div className="aspect-square bg-gray-50 relative overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-gray-300">
-            <div className="w-16 h-16 mx-auto mb-3 border border-gray-200 flex items-center justify-center">
-              <span className="text-xl font-light text-gray-400">
-                {product.name.charAt(0)}
-              </span>
+        {product.mainImage && !imageError ? (
+          <img
+            src={product.mainImage}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={() => setImageError(true)}
+            onLoad={() => setImageError(false)}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center text-gray-300">
+              <div className="w-16 h-16 mx-auto mb-3 border border-gray-200 flex items-center justify-center">
+                <span className="text-xl font-light text-gray-400">
+                  {product.name.charAt(0)}
+                </span>
+              </div>
+              <p className="text-xs font-light text-gray-400 uppercase tracking-wider">Zdjęcie produktu</p>
             </div>
-            <p className="text-xs font-light text-gray-400 uppercase tracking-wider">Product Image</p>
           </div>
-        </div>
+        )}
 
         {/* Hover overlay - subtle */}
         <div className={`absolute inset-0 bg-black/5 transition-opacity duration-500 ${

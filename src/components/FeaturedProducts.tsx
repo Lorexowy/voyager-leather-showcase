@@ -10,6 +10,7 @@ export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
+  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
@@ -36,6 +37,10 @@ export default function FeaturedProducts() {
       case 'as-aleksandra-sopel': return 'AS Premium';
       default: return category;
     }
+  };
+
+  const handleImageError = (productId: string) => {
+    setImageErrors(prev => ({ ...prev, [productId]: true }));
   };
 
   return (
@@ -78,7 +83,7 @@ export default function FeaturedProducts() {
           </div>
         ) : (
           <>
-            {/* Products Grid - clean */}
+            {/* Products Grid - ZAKTUALIZOWANE */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               {products.map((product) => (
                 <div
@@ -94,18 +99,28 @@ export default function FeaturedProducts() {
                     </div>
                   )}
 
-                  {/* Image placeholder - clean */}
+                  {/* Image - ZAKTUALIZOWANE DO PRAWDZIWYCH OBRAZÓW */}
                   <div className="aspect-square bg-gray-50 relative overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center text-gray-300">
-                        <div className="w-16 h-16 mx-auto mb-3 border border-gray-200 flex items-center justify-center">
-                          <span className="text-xl font-light text-gray-400">
-                            {product.name.charAt(0)}
-                          </span>
+                    {product.mainImage && !imageErrors[product.id] ? (
+                      <img
+                        src={product.mainImage}
+                        alt={product.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        onError={() => handleImageError(product.id)}
+                      />
+                    ) : (
+                      // Fallback placeholder
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center text-gray-300">
+                          <div className="w-16 h-16 mx-auto mb-3 border border-gray-200 flex items-center justify-center">
+                            <span className="text-xl font-light text-gray-400">
+                              {product.name.charAt(0)}
+                            </span>
+                          </div>
+                          <p className="text-xs font-light text-gray-400 uppercase tracking-wider">Zdjęcie produktu</p>
                         </div>
-                        <p className="text-xs font-light text-gray-400 uppercase tracking-wider">Zdjęcie produktu</p>
                       </div>
-                    </div>
+                    )}
 
                     {/* Hover overlay - subtle */}
                     <div className={`absolute inset-0 bg-black/5 transition-opacity duration-500 ${
@@ -120,6 +135,21 @@ export default function FeaturedProducts() {
                         </Link>
                       </div>
                     </div>
+
+                    {/* Multiple images indicator - minimalistyczny */}
+                    {product.images.length > 1 && (
+                      <div className="absolute bottom-4 left-4 flex space-x-1">
+                        {product.images.slice(0, 3).map((_, index) => (
+                          <div 
+                            key={index}
+                            className="w-1.5 h-1.5 bg-white/70 rounded-full"
+                          />
+                        ))}
+                        {product.images.length > 3 && (
+                          <div className="text-white/70 text-xs ml-2 font-light">+{product.images.length - 3}</div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Content - clean typography */}
