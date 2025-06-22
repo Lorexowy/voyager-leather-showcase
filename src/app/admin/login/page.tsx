@@ -45,7 +45,7 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
-        {/* Header - minimal */}
+        {/* Header */}
         <div className="text-center mb-12">
           <Link href="/" className="inline-flex items-center space-x-3 mb-8">
             <div className="w-12 h-12 bg-gray-900 rounded-sm flex items-center justify-center">
@@ -62,7 +62,7 @@ export default function AdminLoginPage() {
           </p>
         </div>
 
-        {/* Login Form - minimal */}
+        {/* Login Form */}
         <div className="bg-gray-50 p-8 border border-gray-200">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Email field */}
@@ -155,13 +155,11 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
-          {/* Demo credentials info */}
-          <div className="mt-8 p-6 bg-white border border-gray-200">
-            <h3 className="text-sm font-light text-gray-900 mb-3 uppercase tracking-wider">Dane logowania:</h3>
-            <div className="text-sm text-gray-600 space-y-2 font-light">
-              <div><strong className="font-medium">Email:</strong> admin@voyager.pl</div>
-              <div><strong className="font-medium">Hasło:</strong> VoyagerAdmin2024!</div>
-            </div>
+          {/* Password Reset Info */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600 font-light">
+              Problemy z logowaniem? Skontaktuj się z administratorem systemu.
+            </p>
           </div>
         </div>
 
