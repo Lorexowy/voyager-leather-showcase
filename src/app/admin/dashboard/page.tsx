@@ -72,6 +72,8 @@ export default function AdminDashboard() {
           router.push('/admin/login');
         }
       } else {
+        // Użytkownik nie jest zalogowany
+        toast.error('Musisz się zalogować, aby uzyskać dostęp do panelu administratora');
         router.push('/admin/login');
       }
       setIsLoading(false);

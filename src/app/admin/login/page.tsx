@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
+import { onAuthStateChanged } from 'firebase/auth';
 import { Eye, EyeOff, Lock, Mail, AlertCircle, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { signInAdmin } from '@/lib/auth';
+import { auth } from '@/lib/firebase';
+import { signInAdmin, isUserAdmin } from '@/lib/auth';
 
 interface LoginForm {
   email: string;
@@ -16,6 +18,7 @@ interface LoginForm {
 export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
 
   const {
@@ -25,6 +28,26 @@ export default function AdminLoginPage() {
   } = useForm<LoginForm>({
     mode: 'onChange'
   });
+
+  // Sprawdź czy admin już jest zalogowany
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        // Sprawdź czy to admin
+        const adminStatus = await isUserAdmin(currentUser);
+        if (adminStatus) {
+          // Admin już zalogowany - przekieruj na dashboard
+          toast.success('Jesteś już zalogowany!');
+          router.push('/admin/dashboard');
+          return;
+        }
+      }
+      // Nie jest zalogowany lub nie jest adminem - pokaż formularz
+      setIsCheckingAuth(false);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
@@ -41,6 +64,18 @@ export default function AdminLoginPage() {
       setIsLoading(false);
     }
   };
+
+  // Pokazuj loader podczas sprawdzania autoryzacji
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600 font-light">Sprawdzanie statusu logowania...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -86,6 +121,7 @@ export default function AdminLoginPage() {
                     errors.email ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-gray-900'
                   }`}
                   placeholder="admin@voyager.pl"
+                  disabled={isLoading}
                 />
               </div>
               {errors.email && (
@@ -117,11 +153,13 @@ export default function AdminLoginPage() {
                     errors.password ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-gray-900'
                   }`}
                   placeholder="Wprowadź hasło"
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  disabled={isLoading}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
