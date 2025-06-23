@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { CATEGORIES } from '@/types';
 
@@ -72,12 +73,17 @@ export default function Header() {
     <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          {/* Logo - minimalistyczny */}
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 bg-gray-900 rounded-sm flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
-              <span className="text-white font-light text-lg tracking-wider">V</span>
+          {/* Logo - prawdziwe logo SVG */}
+          <Link href="/" className="flex items-center">
+            <div className="relative w-32 h-32 md:w-40 md:h-40">
+              <Image
+                src="/images/logo/logovoyager.svg"
+                alt="Voyager Logo"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
-            <span className="text-2xl font-light text-gray-900 tracking-wide transition-colors duration-200 group-hover:text-gray-700">Voyager</span>
           </Link>
 
           {/* Desktop Navigation - minimalistyczny */}
