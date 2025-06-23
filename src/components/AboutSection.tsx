@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Award, Users, Leaf, Clock } from 'lucide-react';
 
 const features = [
@@ -57,18 +58,16 @@ export default function AboutSection() {
             </div>
           </div>
 
-          {/* Image placeholder - minimalistyczny */}
+          {/* Image - PNG bez tła */}
           <div className="relative">
-            <div className="aspect-[4/5] bg-white border border-gray-200 relative overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center text-gray-300">
-                  <div className="w-24 h-24 mx-auto mb-6 border border-gray-200 flex items-center justify-center">
-                    <Award className="w-12 h-12 text-gray-300" />
-                  </div>
-                  <p className="text-lg font-light text-gray-400">Nasza pracownia</p>
-                  <p className="text-sm text-gray-400 font-light">Zdjęcie z procesu produkcji</p>
-                </div>
-              </div>
+            <div className="aspect-[4/5] relative overflow-hidden flex items-center justify-center">
+              <Image
+                src="/images/pnglogoabout.png"
+                alt="Logo Voyager - galanteria skórzana"
+                fill
+                className="object-contain"
+                quality={90}
+              />
             </div>
           </div>
         </div>
