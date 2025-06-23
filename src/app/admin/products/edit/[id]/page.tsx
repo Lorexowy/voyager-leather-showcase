@@ -130,9 +130,11 @@ export default function EditProductPage() {
       setIsLoadingProduct(true);
       
       try {
+        console.log('🔍 Loading product with ID:', productId);
         const productData = await getProductById(productId);
         
         if (productData) {
+          console.log('✅ Product loaded successfully:', productData);
           setProduct(productData);
           
           // Załaduj istniejące obrazy
@@ -167,8 +169,8 @@ export default function EditProductPage() {
           toast.error('Produkt nie znaleziony');
           router.push('/admin/dashboard');
         }
-      } catch (error) {
-        console.error('Error loading product:', error);
+      } catch (error: any) {
+        console.error('❌ Error loading product:', error);
         toast.error('Nie udało się załadować danych produktu');
         router.push('/admin/dashboard');
       } finally {
@@ -182,6 +184,8 @@ export default function EditProductPage() {
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
+
+    console.log('🔍 Starting image upload for', files.length, 'files');
 
     const startingIndex = productImages.length;
     const newImages: UploadedImage[] = Array.from(files).map(file => ({
@@ -220,6 +224,7 @@ export default function EditProductPage() {
           });
         },
         (results) => {
+          console.log('✅ Upload completed:', results);
           // Force wszystkie nowe obrazy na nie-uploading
           setProductImages(prev => {
             const updated = [...prev];
@@ -248,7 +253,7 @@ export default function EditProductPage() {
         }
       );
     } catch (error: any) {
-      console.error('Upload error:', error);
+      console.error('❌ Upload error:', error);
       toast.error('Wystąpił błąd podczas upload\'u zdjęć');
       setIsUploadingImages(false);
     }
@@ -292,7 +297,14 @@ export default function EditProductPage() {
     }
   };
 
+  // ZAKTUALIZOWANA funkcja onSubmit z debugowaniem
   const onSubmit = async (data: ProductForm) => {
+    console.log('🔍 Debug - Form submission started');
+    console.log('🔍 Debug - Form data:', data);
+    console.log('🔍 Debug - Product images:', productImages);
+    console.log('🔍 Debug - Product ID:', params.id);
+    console.log('🔍 Debug - Images to delete:', imagesToDelete);
+
     if (productImages.length === 0) {
       toast.error('Produkt musi mieć co najmniej jedno zdjęcie');
       return;
@@ -304,20 +316,29 @@ export default function EditProductPage() {
       return;
     }
 
+    // Sprawdź czy są obrazy w trakcie upload'u
+    const stillUploading = productImages.some(img => img.isUploading);
+    if (stillUploading) {
+      toast.error('Poczekaj aż wszystkie zdjęcia zostaną dodane');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // Usuń oznaczone do usunięcia zdjęcia
+      // 1. Usuń oznaczone do usunięcia zdjęcia
       if (imagesToDelete.length > 0) {
+        console.log('🔍 Deleting images:', imagesToDelete);
         try {
           await deleteMultipleImages(imagesToDelete);
-          console.log('Deleted old images:', imagesToDelete);
+          console.log('✅ Old images deleted successfully');
         } catch (error) {
-          console.error('Error deleting old images:', error);
+          console.error('❌ Error deleting old images:', error);
+          // Kontynuuj mimo błędu z usuwaniem zdjęć
         }
       }
 
-      // Przygotuj wymiary
+      // 2. Przygotuj wymiary - DOKŁADNIE jak w add
       let dimensions: ProductDimensions | undefined = undefined;
       
       if (data.dimensionsEnabled) {
@@ -327,37 +348,62 @@ export default function EditProductPage() {
         const length = data.length ? parseFloat(data.length) : undefined;
 
         if (width || height || depth || length) {
-          dimensions = {
-            width,
-            height,
-            depth,
-            length,
-            unit: data.dimensionUnit
-          };
+          dimensions = { unit: data.dimensionUnit };
+          if (width !== undefined) dimensions.width = width;
+          if (height !== undefined) dimensions.height = height;
+          if (depth !== undefined) dimensions.depth = depth;
+          if (length !== undefined) dimensions.length = length;
         }
       }
 
-      // Przygotuj URLs zdjęć
-      const imageUrls = productImages.map(img => img.url);
+      // 3. Przygotuj URLs zdjęć
+      const imageUrls = productImages
+        .filter(img => img.url && !img.error)
+        .map(img => img.url);
+      
+      if (imageUrls.length === 0) {
+        throw new Error('Brak prawidłowych zdjęć do zapisania');
+      }
+
       const mainImageUrl = productImages[mainImageIndex]?.url || imageUrls[0];
 
-      const updatedProductData = {
-        name: data.name,
-        description: data.description,
-        category: data.category,
-        dimensions: dimensions,
-        availableColors: validColors,
-        images: imageUrls,
-        mainImage: mainImageUrl,
-        isActive: data.isActive
-      };
+      // 4. Przygotuj dane produktu - TYLKO te które się zmieniły
+      const updatedProductData: any = {};
+      
+      // Zawsze aktualizuj te podstawowe pola
+      updatedProductData.name = data.name;
+      updatedProductData.description = data.description;
+      updatedProductData.category = data.category;
+      updatedProductData.availableColors = validColors;
+      updatedProductData.images = imageUrls;
+      updatedProductData.mainImage = mainImageUrl;
+      updatedProductData.isActive = data.isActive;
+      
+      // Wymiary - ustaw lub usuń
+      if (dimensions) {
+        updatedProductData.dimensions = dimensions;
+      } else {
+        // Jeśli wymiary są wyłączone, usuń je z dokumentu
+        updatedProductData.dimensions = null; // To spowoduje usunięcie pola
+      }
 
+      console.log('🔍 Final product data to save:', updatedProductData);
+
+      // 5. Zapisz do Firebase
       await updateProduct(params.id as string, updatedProductData);
       
+      console.log('✅ Product updated successfully!');
       toast.success('Produkt został zaktualizowany pomyślnie!');
       router.push('/admin/dashboard');
+      
     } catch (error: any) {
-      console.error('Error updating product:', error);
+      console.error('❌ Error updating product:', error);
+      console.error('❌ Error details:', {
+        code: error?.code,
+        message: error?.message,
+        stack: error?.stack
+      });
+      
       toast.error(error.message || 'Wystąpił błąd podczas aktualizacji produktu');
     } finally {
       setIsLoading(false);
@@ -478,9 +524,8 @@ export default function EditProductPage() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          {/* Basic Information - bez zmian, skopiuj z add/page.tsx */}
           
-          {/* Images Section - NOWA SEKCJA */}
+          {/* Images Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Zdjęcia produktu</h3>
             
@@ -515,7 +560,6 @@ export default function EditProductPage() {
                             alt={`Preview ${index + 1}`}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              // Fallback do placeholder
                               const target = e.target as HTMLImageElement;
                               target.style.display = 'none';
                             }}
@@ -603,7 +647,6 @@ export default function EditProductPage() {
             </div>
           </div>
 
-          {/* Form fields - skopiuj z add/page.tsx wszystkie sekcje: Basic Information, Dimensions, Colors, Settings */}
           {/* Basic Information */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Podstawowe informacje</h3>
@@ -685,7 +728,7 @@ export default function EditProductPage() {
             </div>
           </div>
 
-          {/* Dimensions - skopiuj z add/page.tsx */}
+          {/* Dimensions */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-light text-gray-900 mb-6 tracking-tight">Wymiary produktu</h3>
             
@@ -782,7 +825,7 @@ export default function EditProductPage() {
             )}
           </div>
 
-          {/* Available Colors - skopiuj z add/page.tsx */}
+          {/* Available Colors */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-light text-gray-900 mb-6 tracking-tight">
               Dostępne kolory <span className="text-red-500">*</span>
@@ -897,6 +940,21 @@ export default function EditProductPage() {
               </button>
             </div>
           </div>
+
+          {/* Debug info - tylko w development */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="bg-yellow-50 border border-yellow-200 p-4 text-xs">
+              <h4 className="font-medium text-yellow-800 mb-2">Debug Info:</h4>
+              <div className="space-y-1 text-yellow-700">
+                <div>Images: {productImages.length}</div>
+                <div>Still uploading: {productImages.some(img => img.isUploading) ? 'Yes' : 'No'}</div>
+                <div>Valid images: {productImages.filter(img => img.url && !img.error).length}</div>
+                <div>Form valid: {isValid ? 'Yes' : 'No'}</div>
+                <div>Can submit: {canSubmit ? 'Yes' : 'No'}</div>
+                <div>Images to delete: {imagesToDelete.length}</div>
+              </div>
+            </div>
+          )}
         </form>
       </div>
     </div>

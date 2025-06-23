@@ -6,6 +6,7 @@ import {
   getDoc,
   updateDoc, 
   deleteDoc,
+  deleteField,
   query, 
   where,
   orderBy,
@@ -15,6 +16,7 @@ import { db } from './firebase';
 import { COLLECTIONS, FirestoreProduct, convertFirestoreProduct } from './firestore-types';
 import { Product, ProductCategory } from '@/types';
 import { deleteMultipleImages } from './storage';
+
 // Dodaj nowy produkt
 export const addProduct = async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
   try {
@@ -162,28 +164,87 @@ export const getProductById = async (productId: string): Promise<Product | null>
   }
 };
 
-// Zaktualizuj produkt
-export const updateProduct = async (productId: string, productData: Partial<Omit<Product, 'id' | 'createdAt'>>): Promise<void> => {
+// ZAKTUALIZOWANA funkcja updateProduct
+export const updateProduct = async (
+  productId: string, 
+  productData: Partial<Omit<Product, 'id' | 'createdAt'>>
+): Promise<void> => {
   try {
+    console.log('🔍 Updating product:', productId, 'with data:', productData);
+    
     const docRef = doc(db, COLLECTIONS.PRODUCTS, productId);
     
-    // Przygotuj dane do aktualizacji - usuń undefined values
-    const cleanData: any = {
+    // Sprawdź czy dokument istnieje
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) {
+      throw new Error('Produkt nie istnieje');
+    }
+    
+    // Przygotuj dane do aktualizacji - DOKŁADNIE bez undefined
+    const cleanData: Record<string, any> = {
       updatedAt: Timestamp.now(),
     };
     
-    // Dodaj tylko zdefiniowane pola
-    Object.keys(productData).forEach(key => {
-      const value = (productData as any)[key];
-      if (value !== undefined) {
-        cleanData[key] = value;
-      }
-    });
+    // Bezpieczne dodawanie pól - tylko te które naprawdę mają wartość
+    if (productData.name !== undefined) {
+      cleanData.name = productData.name;
+    }
     
+    if (productData.description !== undefined) {
+      cleanData.description = productData.description;
+    }
+    
+    if (productData.category !== undefined) {
+      cleanData.category = productData.category;
+    }
+    
+    if (productData.availableColors !== undefined) {
+      cleanData.availableColors = productData.availableColors;
+    }
+    
+    if (productData.images !== undefined) {
+      cleanData.images = productData.images;
+    }
+    
+    if (productData.mainImage !== undefined) {
+      cleanData.mainImage = productData.mainImage;
+    }
+    
+    if (productData.isActive !== undefined) {
+      cleanData.isActive = productData.isActive;
+    }
+    
+    // Specjalna obsługa dimensions - może być null lub obiekt
+    if (productData.dimensions !== undefined) {
+      if (productData.dimensions === null) {
+        // Użyj deleteField() aby usunąć pole
+        cleanData.dimensions = deleteField();
+      } else {
+        cleanData.dimensions = productData.dimensions;
+      }
+    }
+    
+    console.log('🔍 Clean data to update:', cleanData);
+    
+    // Użyj updateDoc z bezpieczną obsługą błędów
     await updateDoc(docRef, cleanData);
-  } catch (error) {
-    console.error('Error updating product:', error);
-    throw new Error('Nie udało się zaktualizować produktu');
+    
+    console.log('✅ Product updated successfully');
+  } catch (error: any) {
+    console.error('❌ Error updating product:', error);
+    console.error('❌ Error code:', error?.code);
+    console.error('❌ Error message:', error?.message);
+    
+    // Lepsze komunikaty błędów
+    if (error?.code === 'not-found') {
+      throw new Error('Produkt nie został znaleziony');
+    } else if (error?.code === 'permission-denied') {
+      throw new Error('Brak uprawnień do edycji produktu');
+    } else if (error?.code === 'invalid-argument') {
+      throw new Error('Nieprawidłowe dane produktu');
+    } else {
+      throw new Error(`Nie udało się zaktualizować produktu: ${error?.message || 'Nieznany błąd'}`);
+    }
   }
 };
 
