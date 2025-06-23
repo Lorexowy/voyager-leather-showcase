@@ -7,28 +7,37 @@ import Image from 'next/image';
 export default function HeroSection() {
   return (
     <section className="relative min-h-[85vh] flex items-center justify-center">
-      {/* Background Image */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/images/HeroBanner.jpg"
-          alt="Leather craftsmanship - premium leather goods"
-          fill
-          className="object-cover"
-          priority
-          quality={90}
-        />
-        {/* Dark overlay for better text readability */}
-        <div className="absolute inset-0 bg-black/40"></div>
+      {/* Background Image with white border on desktop only */}
+      <div className="absolute inset-0 z-0 lg:p-8">
+        <div className="relative w-full h-full lg:border-4 lg:border-white/20 lg:rounded-lg lg:overflow-hidden">
+          <Image
+            src="/images/HeroBanner.jpg"
+            alt="Leather craftsmanship - premium leather goods"
+            fill
+            className="object-cover"
+            priority
+            quality={90}
+          />
+          {/* Dark overlay for better text readability */}
+          <div className="absolute inset-0 bg-black/40"></div>
+        </div>
       </div>
 
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center max-w-4xl mx-auto">
           
-          {/* Main Heading */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-light text-white mb-8 leading-none tracking-tight">
-            <span className="block font-medium">Polska Galanteria Skórzana</span>
-          </h1>
+          {/* Logo */}
+          <div className="mb-12 flex justify-center">
+            <Image
+              src="/images/logo/logofullhero.svg"
+              alt="Polska Galanteria Skórzana"
+              width={700}
+              height={400}
+              className="filter brightness-0 invert max-w-full h-auto"
+              priority
+            />
+          </div>
           
           {/* Description */}
           <p className="text-lg sm:text-xl text-white/90 mb-12 max-w-2xl mx-auto font-light leading-relaxed">

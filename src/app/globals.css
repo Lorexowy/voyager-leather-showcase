@@ -68,17 +68,56 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-line-clamp: 3;
 }
 
-/* Focus styles for accessibility */
-*:focus {
-  outline: 2px solid #374151;
-  outline-offset: 2px;
+/* CAŁKOWITE WYŁĄCZENIE FOCUS OUTLINE DLA CAŁEJ STRONY */
+* {
+  outline: none !important;
 }
 
-/* Button focus improvements */
+*:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+*:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+*:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Wyłączenie dla wszystkich elementów interaktywnych */
+button,
+a,
+input,
+select,
+textarea,
+[tabindex],
+[role="button"],
+[role="link"] {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 button:focus,
-a:focus {
-  outline: 2px solid #374151;
-  outline-offset: 2px;
+button:active,
+button:focus-visible,
+a:focus,
+a:active,
+a:focus-visible,
+input:focus,
+input:active,
+input:focus-visible,
+select:focus,
+select:active,
+select:focus-visible,
+textarea:focus,
+textarea:active,
+textarea:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* Custom scrollbar for webkit browsers */
