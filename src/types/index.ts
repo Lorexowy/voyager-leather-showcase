@@ -41,6 +41,8 @@ export interface ContactForm {
   message: string;
   productId?: string;
   productName?: string;
+  consentGiven?: boolean;
+  consentTimestamp?: string; 
 }
 
 export interface AdminUser {

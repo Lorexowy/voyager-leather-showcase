@@ -27,6 +27,8 @@ export const submitContactForm = async (formData: ContactForm): Promise<void> =>
       createdAt: Timestamp.now(),
       isRead: false,
       isReplied: false,
+      consentGiven: formData.consentGiven || false,
+      consentTimestamp: formData.consentTimestamp || '',
     });
   } catch (error) {
     console.error('Error submitting contact form:', error);

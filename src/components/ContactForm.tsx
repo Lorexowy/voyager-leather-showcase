@@ -13,6 +13,10 @@ interface ContactFormProps {
   selectedProductId?: string;
 }
 
+interface ExtendedContactForm extends ContactFormType {
+  privacyConsent: boolean;
+}
+
 export default function ContactForm({ selectedProductId }: ContactFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -25,9 +29,10 @@ export default function ContactForm({ selectedProductId }: ContactFormProps) {
     reset,
     watch,
     formState: { errors, isValid }
-  } = useForm<ContactFormType>({
+  } = useForm<ExtendedContactForm>({
     defaultValues: {
       productId: selectedProductId || '',
+      privacyConsent: false,
     },
     mode: 'onChange'
   });
@@ -51,7 +56,7 @@ export default function ContactForm({ selectedProductId }: ContactFormProps) {
     fetchProducts();
   }, []);
 
-  const onSubmit = async (data: ContactFormType) => {
+  const onSubmit = async (data: ExtendedContactForm) => {
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
@@ -61,13 +66,20 @@ export default function ContactForm({ selectedProductId }: ContactFormProps) {
         ? products.find(p => p.id === data.productId)?.name 
         : undefined;
 
-      const formDataWithProduct = {
+      // Usuń privacyConsent z danych wysyłanych do bazy (nie przechowujemy zgody, tylko jej fakt)
+      const { privacyConsent, ...formDataWithProduct } = {
         ...data,
         productName: selectedProductName
       };
 
-      // 1. Zapisz do Firebase
-      await submitContactForm(formDataWithProduct);
+      // 1. Zapisz do Firebase (razem z informacją o zgodzie)
+      const submissionData = {
+        ...formDataWithProduct,
+        consentGiven: true, // Fakt udzielenia zgody
+        consentTimestamp: new Date().toISOString(), // Kiedy zgoda została udzielona
+      };
+      
+      await submitContactForm(submissionData);
       
       // 2. Wyślij przez EmailJS (jeśli skonfigurowane)
       // await sendEmailNotification(formDataWithProduct);
@@ -226,15 +238,40 @@ export default function ContactForm({ selectedProductId }: ContactFormProps) {
         )}
       </div>
 
-      {/* Privacy policy */}
-      <div className="bg-gray-50 p-6 text-sm text-gray-600 font-light border border-gray-200">
-        <p>
-          Wysyłając formularz, wyrażasz zgodę na przetwarzanie Twoich danych osobowych 
-          w celu udzielenia odpowiedzi na zapytanie. Więcej informacji w{' '}
-          <a href="/polityka-prywatnosci" className="text-gray-900 hover:underline font-medium">
-            polityce prywatności
-          </a>.
-        </p>
+      {/* Privacy consent checkbox */}
+      <div>
+        <div className="flex items-start space-x-3">
+          <input
+            type="checkbox"
+            id="privacyConsent"
+            {...register('privacyConsent', {
+              required: 'Musisz wyrazić zgodę na przetwarzanie danych osobowych'
+            })}
+            className={`w-4 h-4 mt-1 text-gray-900 border-gray-300 rounded focus:ring-gray-900 ${
+              errors.privacyConsent ? 'border-red-300' : ''
+            }`}
+          />
+          <label htmlFor="privacyConsent" className="text-sm text-gray-700 font-light leading-relaxed">
+            <span className="text-red-500">*</span> Wyrażam zgodę na przetwarzanie moich danych osobowych 
+            przez VOYAGER Robert Sopel w celu udzielenia odpowiedzi na moje zapytanie. 
+            Zapoznałem/am się z{' '}
+            <a 
+              href="/polityka-prywatnosci" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-900 hover:underline font-medium"
+            >
+              polityką prywatności
+            </a>
+            {' '}i akceptuję jej postanowienia.
+          </label>
+        </div>
+        {errors.privacyConsent && (
+          <p className="mt-2 text-sm text-red-600 flex items-center font-light">
+            <AlertCircle className="w-4 h-4 mr-2" />
+            {errors.privacyConsent.message}
+          </p>
+        )}
       </div>
 
       {/* Submit button */}
@@ -272,8 +309,7 @@ export default function ContactForm({ selectedProductId }: ContactFormProps) {
           <div>
             <h4 className="text-green-900 font-medium mb-2">Wiadomość wysłana pomyślnie!</h4>
             <p className="text-green-800 text-sm font-light">
-              Dziękujemy za kontakt. Odpowiemy na Twoje zapytanie w ciągu 24 godzin.
-              Wiadomość została zapisana w naszym systemie.
+              Dziękujemy za kontakt. Odpowiemy na Twoje zapytanie w ciągu 24-48 godzin.
             </p>
           </div>
         </div>

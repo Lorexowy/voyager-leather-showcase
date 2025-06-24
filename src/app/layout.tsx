@@ -16,7 +16,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: 'Voyager - Galanteria Skórzana',
+  title: 'Voyager | Polska Galanteria Skórzana',
   description: 'Voyager - Wysokiej jakości galanteria skórzana. Paski, plecaki, torebki i akcesoria firmowe.',
   keywords: 'galanteria skórzana, paski, plecaki, torebki, akcesoria firmowe, personalizacja, skóra naturalna',
   authors: [{ name: 'Voyager' }],

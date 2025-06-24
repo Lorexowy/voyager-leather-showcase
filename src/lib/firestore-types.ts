@@ -29,6 +29,8 @@ export interface FirestoreContactMessage {
   createdAt: Timestamp;
   isRead: boolean;
   isReplied: boolean;
+  consentGiven?: boolean; // Dodaj to
+  consentTimestamp?: string; // Dodaj to
 }
 
 export interface FirestoreAdmin {
