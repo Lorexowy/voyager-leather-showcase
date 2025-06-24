@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Mail, Phone, MapPin, Instagram, Linkedin, Clock, Award } from 'lucide-react';
 import { CATEGORIES } from '@/types';
 
@@ -12,14 +13,20 @@ export default function Footer() {
         <div className="py-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Company info & Certyfikat */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <div className="flex items-center space-x-3 mb-8">
-              <div className="w-8 h-8 bg-white flex items-center justify-center">
-                <span className="text-gray-900 font-light text-lg tracking-wider">V</span>
+            {/* Logo container - naprawiony */}
+            <div className="flex items-center justify-center sm:justify-start mb-8">
+              <div className="w-auto h-auto flex items-center justify-center">
+                <Image
+                  src="/images/logo/logovoyager.svg"
+                  alt="Voyager Logo"
+                  width={250}
+                  height={250}
+                  className="filter brightness-0 invert"
+                />
               </div>
-              <span className="text-2xl font-light tracking-wide">Voyager</span>
             </div>
             
-            <p className="text-gray-400 mb-8 leading-relaxed font-light">
+            <p className="text-gray-400 mb-8 leading-relaxed font-light text-center sm:text-left">
               Ekskluzywna galanteria skórzana najwyższej jakości. 
               Tworzymy produkty z pasją i dbałością o każdy detal.
             </p>
@@ -213,7 +220,7 @@ export default function Footer() {
         <div className="py-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-gray-400 text-sm font-light">
-              © 2024 Voyager. Wszystkie prawa zastrzeżone.
+              © 2025 Voyager. Wszystkie prawa zastrzeżone.
             </div>
             
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-8 text-sm text-center sm:text-left">
@@ -230,6 +237,23 @@ export default function Footer() {
                 Regulamin
               </Link>
             </div>
+          </div>
+        </div>
+
+        {/* Developer credit */}
+        <div className="py-4 border-t border-gray-800/50">
+          <div className="text-center">
+            <p className="text-gray-500 text-xs font-light">
+              Strona zaprojektowana i wykonana przez{' '}
+              <a 
+                href="https://www.micheldev.pl" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors font-medium"
+              >
+                MichelDev
+              </a>
+            </p>
           </div>
         </div>
       </div>

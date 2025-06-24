@@ -52,7 +52,7 @@ export default function RegulaminPage() {
             </div>
             <p className="text-gray-700 font-light leading-relaxed">
               Niniejszy regulamin określa zasady korzystania ze strony internetowej voyagersopel.pl 
-              oraz warunki współpracy z firmą VOYAGER Robert Sopel.
+              oraz warunki współpracy z firmą "VOYAGER" Robert Sopel.
             </p>
           </div>
 
@@ -65,10 +65,10 @@ export default function RegulaminPage() {
               <div className="space-y-4 text-gray-700 font-light">
                 <p>
                   <strong>1.1.</strong> Niniejszy Regulamin określa zasady korzystania ze strony internetowej 
-                  dostępnej pod adresem voyagersopel.pl (dalej: „Serwis").
+                  dostępnej pod adresem www.voyagersopel.pl (dalej: „Serwis").
                 </p>
                 <p>
-                  <strong>1.2.</strong> Właścicielem i administratorem Serwisu jest VOYAGER Robert Sopel 
+                  <strong>1.2.</strong> Właścicielem i administratorem Serwisu jest "VOYAGER" Robert Sopel 
                   z siedzibą przy Aleje Stefana Batorego 60/1, 33-300 Nowy Sącz (dalej: „Administrator").
                 </p>
                 <p>
@@ -91,7 +91,7 @@ export default function RegulaminPage() {
               <dl className="space-y-4 text-gray-700 font-light">
                 <div>
                   <dt className="font-medium text-gray-900 mb-2">Serwis</dt>
-                  <dd>Strona internetowa voyagersopel.pl wraz z wszystkimi podstronami i funkcjonalnościami</dd>
+                  <dd>Strona internetowa www.voyagersopel.pl wraz z wszystkimi podstronami i funkcjonalnościami</dd>
                 </div>
                 <div>
                   <dt className="font-medium text-gray-900 mb-2">Użytkownik</dt>
@@ -218,7 +218,7 @@ export default function RegulaminPage() {
                 </p>
                 <p>
                   <strong>5.4.</strong> Zdjęcia produktów prezentowanych w Serwisie są własnością 
-                  VOYAGER Robert Sopel i nie mogą być wykorzystywane bez zgody.
+                  "VOYAGER" Robert Sopel i nie mogą być wykorzystywane bez zgody.
                 </p>
               </div>
             </div>
@@ -244,10 +244,6 @@ export default function RegulaminPage() {
                   <li className="flex items-start space-x-3">
                     <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
                     <span>Szczegóły współpracy ustalane są indywidualnie</span>
-                  </li>
-                  <li className="flex items-start space-x-3">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                    <span>Możliwa jest wysyłka próbek produktów</span>
                   </li>
                 </ul>
               </div>
@@ -296,7 +292,7 @@ export default function RegulaminPage() {
             <div className="bg-white border border-gray-200 p-6">
               <div className="space-y-4 text-gray-700 font-light">
                 <p>
-                  <strong>7.1.</strong> Administrator dołoża wszelkich starań, aby Serwis był dostępny 
+                  <strong>7.1.</strong> Administrator dokłada wszelkich starań, aby Serwis był dostępny 
                   przez 24 godziny na dobę, 7 dni w tygodniu.
                 </p>
                 <p>
@@ -323,47 +319,48 @@ export default function RegulaminPage() {
             <div className="bg-white border border-gray-200 p-6">
               <div className="space-y-4 text-gray-700 font-light">
                 <p>
-                  <strong>8.1.</strong> Administrator nie ponosi odpowiedzialności za szkody powstałe 
-                  w wyniku korzystania z Serwisu, z wyjątkiem przypadków wynikających z winy umyślnej.
-                </p>
-                <p>
-                  <strong>8.2.</strong> Informacje o produktach prezentowanych w Serwisie mają charakter 
+                  <strong>8.1.</strong> Informacje o produktach prezentowanych w Serwisie mają charakter 
                   informacyjny i mogą ulec zmianie bez wcześniejszego powiadomienia.
                 </p>
                 <p>
-                  <strong>8.3.</strong> Administrator nie gwarantuje, że Serwis będzie działał bez przerw 
+                  <strong>8.2.</strong> Administrator nie gwarantuje, że Serwis będzie działał bez przerw 
                   i błędów technicznych.
                 </p>
                 <p>
-                  <strong>8.4.</strong> Użytkownik korzysta z Serwisu na własną odpowiedzialność.
+                  <strong>8.3.</strong> Użytkownik korzysta z Serwisu na własną odpowiedzialność.
                 </p>
               </div>
             </div>
           </section>
 
           {/* 9. Ochrona danych */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-light text-gray-900 mb-6 tracking-tight">
-              9. Ochrona danych osobowych
-            </h2>
-            <div className="bg-white border border-gray-200 p-6">
-              <div className="space-y-4 text-gray-700 font-light">
-                <p>
-                  <strong>9.1.</strong> Kwestie związane z przetwarzaniem danych osobowych reguluje 
-                  oddzielna <Link href="/polityka-prywatnosci" className="text-blue-600 hover:text-blue-800 underline">
-                  Polityka Prywatności</Link>.
-                </p>
-                <p>
-                  <strong>9.2.</strong> Korzystanie z formularza kontaktowego oznacza zgodę na przetwarzanie 
-                  podanych danych osobowych w celu udzielenia odpowiedzi na zapytanie.
-                </p>
-                <p>
-                  <strong>9.3.</strong> Administrator przestrzega przepisów RODO w zakresie ochrony 
-                  danych osobowych.
-                </p>
-              </div>
+        <section className="mb-12">
+        <h2 className="text-2xl font-light text-gray-900 mb-6 tracking-tight">
+            9. Ochrona danych osobowych
+        </h2>
+        <div className="bg-white border border-gray-200 p-6">
+            <div className="space-y-4 text-gray-700 font-light">
+            <p>
+                <strong>9.1.</strong> Zasady przetwarzania danych osobowych określa odrębna&nbsp;
+                <Link href="/polityka-prywatnosci" className="text-blue-600 hover:text-blue-800 underline">
+                Polityka Prywatności
+                </Link>.
+            </p>
+            <p>
+                <strong>9.2.</strong> Skorzystanie z formularza kontaktowego wymaga wcześniejszego
+                wyrażenia zgody na przetwarzanie danych osobowych w celu udzielenia odpowiedzi
+                na przesłane zapytanie.
+            </p>
+            <p>
+                <strong>9.3.</strong> Administrator przetwarza dane osobowe zgodnie z obowiązującymi
+                przepisami prawa, w szczególności z Rozporządzeniem Parlamentu Europejskiego i Rady (UE)
+                2016/679 z dnia 27 kwietnia 2016 r. (RODO), zapewniając ich odpowiednie bezpieczeństwo
+                i poufność.
+            </p>
             </div>
-          </section>
+        </div>
+        </section>
+
 
           {/* 10. Zmiany regulaminu */}
           <section className="mb-12">
@@ -384,8 +381,8 @@ export default function RegulaminPage() {
                   <strong>10.3.</strong> Zmiany wchodzą w życie z chwilą opublikowania nowej wersji Regulaminu.
                 </p>
                 <p>
-                  <strong>10.4.</strong> Continued use of the service after changes means acceptance 
-                  of the new terms.
+                  <strong>10.4.</strong> Korzystanie z Serwisu po wprowadzeniu zmian oznacza akceptację 
+                  nowych warunków.
                 </p>
               </div>
             </div>
@@ -427,7 +424,7 @@ export default function RegulaminPage() {
                 W sprawach dotyczących Regulaminu można skontaktować się z Administratorem:
               </p>
               <div className="bg-gray-50 p-6 border-l-4 border-gray-900">
-                <p className="font-medium text-gray-900 mb-2">VOYAGER Robert Sopel</p>
+                <p className="font-medium text-gray-900 mb-2">"VOYAGER" Robert Sopel</p>
                 <p className="text-gray-700 font-light mb-1">Aleje Stefana Batorego 60/1</p>
                 <p className="text-gray-700 font-light mb-4">33-300 Nowy Sącz</p>
                 
