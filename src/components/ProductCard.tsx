@@ -24,11 +24,37 @@ export default function ProductCard({ product }: ProductCardProps) {
     }
   };
 
+  const getColorHex = (colorName: string) => {
+    const colorMap: { [key: string]: string } = {
+      'Czarny': '#000000',
+      'Biały': '#ffffff',
+      'Czerwony': '#dc2626',
+      'Niebieski': '#2563eb',
+      'Zielony': '#16a34a',
+      'Żółty': '#eab308',
+      'Różowy': '#ec4899',
+      'Fioletowy': '#9333ea',
+      'Pomarańczowy': '#ea580c',
+      'Szary': '#6b7280',
+      'Brązowy': '#92400e',
+      'Granatowy': '#1e3a8a',
+      'Bordowy': '#991b1b',
+      'Beżowy': '#d4af9a',
+      'Kremowy': '#fef3e2'
+    };
+    return colorMap[colorName] || '#9ca3af';
+  };
+
+  const formatDimensionsNice = (dimensions: string) => {
+    // Konwertuje "40 x 30 cm" na ładniejszy format
+    return dimensions.replace(/(\d+)\s*x\s*(\d+)\s*cm/i, '$1×$2 cm');
+  };
+
   const isSpecial = product.category === 'as-aleksandra-sopel';
 
   return (
     <div
-      className="group relative bg-white border border-gray-100 hover:border-gray-200 transition-all duration-500"
+      className="group relative bg-white border border-gray-100 hover:border-gray-200 transition-all duration-500 h-full flex flex-col"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -93,62 +119,60 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Content - clean typography */}
-      <div className="p-6">
+      <div className="p-4 sm:p-6 flex-1 flex flex-col">
         {/* Category badge - minimal */}
-        <div className="mb-4">
+        <div className="mb-3 sm:mb-4">
           <span className="text-xs text-gray-500 font-light uppercase tracking-wider">
             {getCategoryDisplayName(product.category)}
           </span>
         </div>
 
         {/* Product name */}
-        <h3 className="text-lg font-light text-gray-900 mb-3 group-hover:text-gray-700 transition-colors">
+        <h3 className="text-base sm:text-lg font-light text-gray-900 mb-4 sm:mb-6 group-hover:text-gray-700 transition-colors flex-1">
           {product.name}
         </h3>
-        
-        {/* Description */}
-        <p className="text-sm text-gray-600 mb-6 leading-relaxed font-light line-clamp-2">
-          {product.description}
-        </p>
 
         {/* Product details - minimal */}
-        <div className="space-y-2 text-xs text-gray-500 mb-8 font-light">
-          <div>
-            <span className="uppercase tracking-wider">Wymiary:</span> {formatDimensions(product.dimensions)}
+        <div className="space-y-3 text-xs text-gray-500 mb-6 sm:mb-8 font-light">
+          <div className="flex items-center gap-2">
+            <span className="uppercase tracking-wider text-gray-400">Wymiary:</span> 
+            <span className="text-gray-600 font-medium">{formatDimensionsNice(formatDimensions(product.dimensions))}</span>
           </div>
-          <div>
-            <span className="uppercase tracking-wider">Kolory:</span>
-            <div className="inline-flex gap-1 ml-2">
-              {product.availableColors.slice(0, 3).map((color, index) => (
-                <span 
+          <div className="flex items-center gap-2">
+            <span className="uppercase tracking-wider text-gray-400">Kolory:</span>
+            <div className="flex gap-1.5">
+              {product.availableColors.slice(0, 4).map((color, index) => (
+                <div 
                   key={index}
-                  className="text-gray-600"
-                >
-                  {color}{index < Math.min(product.availableColors.length, 3) - 1 ? ', ' : ''}
-                </span>
+                  className="w-4 h-4 rounded-full border border-gray-200 shadow-sm"
+                  style={{ backgroundColor: getColorHex(color) }}
+                  title={color}
+                />
               ))}
-              {product.availableColors.length > 3 && (
-                <span className="text-gray-400">+{product.availableColors.length - 3}</span>
+              {product.availableColors.length > 4 && (
+                <div className="w-4 h-4 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+                  <span className="text-[8px] text-gray-500 font-medium">+{product.availableColors.length - 4}</span>
+                </div>
               )}
             </div>
           </div>
         </div>
 
         {/* Action buttons - minimal */}
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-auto">
           <Link
             href={`/produkty/szczegoly/${product.id}`}
-            className="flex-1 text-center py-3 border border-gray-200 text-gray-700 text-sm font-light hover:border-gray-900 hover:text-gray-900 transition-all duration-300 uppercase tracking-wider"
+            className="flex-1 text-center py-2.5 sm:py-3 border border-gray-200 text-gray-700 text-xs sm:text-sm font-light hover:border-gray-900 hover:text-gray-900 transition-all duration-300 uppercase tracking-wider"
           >
             Zobacz szczegóły
           </Link>
           
           <Link
             href={`/kontakt?product=${product.id}`}
-            className="flex-1 text-center py-3 bg-gray-900 text-white text-sm font-light hover:bg-gray-800 transition-all duration-300 group/btn uppercase tracking-wider"
+            className="flex-1 text-center py-2.5 sm:py-3 bg-gray-900 text-white text-xs sm:text-sm font-light hover:bg-gray-800 transition-all duration-300 group/btn uppercase tracking-wider flex items-center justify-center"
           >
             <span>Zapytaj</span>
-            <ArrowRight className="w-3 h-3 ml-2 inline group-hover/btn:translate-x-1 transition-transform duration-300" />
+            <ArrowRight className="w-3 h-3 ml-2 group-hover/btn:translate-x-1 transition-transform duration-300" />
           </Link>
         </div>
       </div>
