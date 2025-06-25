@@ -15,7 +15,6 @@ export default function ProductDetailsPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedColor, setSelectedColor] = useState<string>('');
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
@@ -28,7 +27,6 @@ export default function ProductDetailsPage() {
         
         if (productData) {
           setProduct(productData);
-          setSelectedColor(productData.availableColors[0] || '');
           
           // Pobierz podobne produkty
           const similar = await getSimilarProducts(productId, productData.category, 3);
@@ -205,24 +203,46 @@ export default function ProductDetailsPage() {
                 <Palette className="w-5 h-5 text-gray-400 mt-1" />
                 <div className="flex-1">
                   <h3 className="font-light text-gray-900 mb-4 uppercase tracking-wider">Dostępne kolory</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {product.availableColors.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => setSelectedColor(color)}
-                        className={`px-4 py-3 border text-sm font-light transition-all duration-300 ${
-                          selectedColor === color
-                            ? 'border-gray-900 bg-gray-900 text-white'
-                            : 'border-gray-200 text-gray-700 hover:border-gray-900'
-                        }`}
-                      >
-                        {color}
-                      </button>
-                    ))}
+                  <div className="flex flex-wrap gap-4">
+                    {product.availableColors.map((color, index) => {
+                      // Mapowanie nazw kolorów na wartości CSS
+                      const getColorValue = (colorName: string) => {
+                        const colorMap: { [key: string]: string } = {
+                          'Brązowy': '#8B4513',
+                          'Czarny': '#000000',
+                          'Beżowy': '#F5F5DC',
+                          'Granatowy': '#191970',
+                          'Czerwony': '#DC143C',
+                          'Bordowy': '#800020',
+                          'Zielony': '#228B22',
+                          'Niebieski': '#4169E1',
+                          'Szary': '#808080',
+                          'Biały': '#FFFFFF',
+                          'Kremowy': '#FFFDD0',
+                          'Camel': '#C19A6B',
+                          'Koniakowy': '#B87333',
+                          'Khaki': '#C3B091',
+                          'Oliwkowy': '#808000',
+                          'Jasnobrązowy': '#D2691E',
+                          'Ciemnobrązowy': '#654321',
+                          'Mahoniowy': '#C04000',
+                          'Tan': '#D2B48C',
+                          'Orzechowy': '#8B4513'
+                        };
+                        return colorMap[colorName] || '#6B7280'; // fallback to gray
+                      };
+
+                      return (
+                        <div key={index} className="flex items-center space-x-2">
+                          <div 
+                            className="w-3 h-3 rounded-full border border-gray-200 flex-shrink-0"
+                            style={{ backgroundColor: getColorValue(color) }}
+                          />
+                          <span className="text-gray-600 font-light">{color}</span>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <p className="text-sm text-gray-500 mt-4 font-light">
-                    Wybrany kolor: <span className="text-gray-900">{selectedColor}</span>
-                  </p>
                 </div>
               </div>
             </div>
@@ -230,7 +250,7 @@ export default function ProductDetailsPage() {
             {/* CTA Buttons - minimal */}
             <div className="space-y-4 pt-8 border-t border-gray-100">
               <Link
-                href={`/kontakt?product=${product.id}&color=${selectedColor}`}
+                href={`/kontakt?product=${product.id}`}
                 className="w-full inline-flex items-center justify-center px-8 py-4 bg-gray-900 text-white font-light hover:bg-gray-800 transition-all duration-300 group uppercase tracking-wider"
               >
                 <span>Zapytaj o ten produkt</span>

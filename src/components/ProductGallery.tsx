@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Expand } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ProductGalleryProps {
   images: string[];
@@ -10,7 +10,6 @@ interface ProductGalleryProps {
 
 export default function ProductGallery({ images, productName }: ProductGalleryProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [imageError, setImageError] = useState<{ [key: number]: boolean }>({});
 
   const nextImage = () => {
@@ -82,16 +81,6 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
           </>
         )}
 
-        {/* Fullscreen button */}
-        {currentImageValid && (
-          <button
-            onClick={() => setIsFullscreen(true)}
-            className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors"
-          >
-            <Expand className="w-5 h-5 text-gray-700" />
-          </button>
-        )}
-
         {/* Image counter */}
         {images.length > 1 && (
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-black/50 text-white text-sm rounded-full">
@@ -127,53 +116,6 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
               )}
             </button>
           ))}
-        </div>
-      )}
-
-      {/* Fullscreen Modal */}
-      {isFullscreen && currentImageValid && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-          <div className="relative max-w-4xl max-h-full">
-            {/* Close button */}
-            <button
-              onClick={() => setIsFullscreen(false)}
-              className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
-            >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            {/* Fullscreen image */}
-            <div className="max-h-[80vh] max-w-full">
-              <img
-                src={images[currentImageIndex]}
-                alt={`${productName} - pełny rozmiar`}
-                className="max-h-full max-w-full object-contain"
-              />
-            </div>
-
-            {/* Navigation in fullscreen */}
-            {images.length > 1 && (
-              <div className="flex justify-center mt-6 space-x-4">
-                <button
-                  onClick={prevImage}
-                  className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors"
-                >
-                  Poprzednie
-                </button>
-                <span className="px-4 py-2 text-white">
-                  {currentImageIndex + 1} / {images.length}
-                </span>
-                <button
-                  onClick={nextImage}
-                  className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors"
-                >
-                  Następne
-                </button>
-              </div>
-            )}
-          </div>
         </div>
       )}
     </div>
