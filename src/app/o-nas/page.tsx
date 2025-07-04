@@ -2,7 +2,7 @@
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Award, Users, Leaf, Clock, Heart, Target, Shield, Star } from 'lucide-react';
+import { Award, Users, Leaf, Heart, Target, Shield, Star } from 'lucide-react';
 import Link from 'next/link';
 
 const values = [
@@ -166,34 +166,6 @@ export default function AboutPage() {
                 </div>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* Timeline Section - minimal */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl font-light text-gray-900 mb-6 tracking-tight">
-              Nasza Historia
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light">
-              Poznaj kluczowe momenty w rozwoju firmy Voyager.
-            </p>
-          </div>
-
-          <div className="space-y-16">
-            {timeline.map((item, index) => (
-              <div key={index} className="flex items-center">
-                <div className="flex-1">
-                  <div className="bg-white border border-gray-200 p-8 hover:border-gray-900 transition-colors">
-                    <div className="text-3xl font-light text-gray-600 mb-3">{item.year}</div>
-                    <h3 className="text-xl font-light text-gray-900 mb-4">{item.title}</h3>
-                    <p className="text-gray-600 font-light">{item.description}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
