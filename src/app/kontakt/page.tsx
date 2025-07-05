@@ -126,20 +126,22 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* Map section - minimal */}
+        {/* Map section - z prawdziwą mapą Google */}
         <div className="mt-32">
           <h2 className="text-3xl font-light text-gray-900 mb-16 text-center tracking-tight">
             Nasza Lokalizacja
           </h2>
           
-          <div className="bg-gray-50 border border-gray-200 h-96 flex items-center justify-center">
-            <div className="text-center text-gray-400">
-              <div className="w-20 h-20 mx-auto mb-6 border border-gray-200 flex items-center justify-center">
-                <MapPin className="w-10 h-10 text-gray-300" />
-              </div>
-              <h3 className="text-xl font-light text-gray-600 mb-2">Interaktywna Mapa</h3>
-              <p className="text-sm font-light text-gray-500">ul. Przykładowa 123, 00-000 Warszawa</p>
-            </div>
+          <div className="bg-gray-50 border border-gray-200 h-96 overflow-hidden">
+            <iframe 
+              width="100%" 
+              height="384" 
+              src="https://maps.google.com/maps?width=100%25&amp;height=600&amp;hl=en&amp;q=Aleja%20Stefana%20Batorego%2060,%2033-300%20Nowy%20S%C4%85cz+(%22Robert%20Sopel%22%20Voyager)&amp;t=&amp;z=14&amp;ie=UTF8&amp;iwloc=B&amp;output=embed"
+              title="Lokalizacja - Aleja Stefana Batorego 60, Nowy Sącz"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+            />
           </div>
         </div>
 
@@ -155,7 +157,7 @@ export default function ContactPage() {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:+48123456789"
+              href="tel:+48505461050"
               className="inline-flex items-center justify-center px-8 py-4 bg-white text-gray-900 font-light hover:bg-gray-100 transition-all duration-300 uppercase tracking-wider"
             >
               <Phone className="w-4 h-4 mr-3" />
@@ -163,7 +165,7 @@ export default function ContactPage() {
             </a>
             
             <a
-              href="mailto:kontakt@voyager.pl"
+              href="mailto:voyager.sopel@gmail.com"
               className="inline-flex items-center justify-center px-8 py-4 border border-white text-white font-light hover:bg-white hover:text-gray-900 transition-all duration-300 uppercase tracking-wider"
             >
               <Mail className="w-4 h-4 mr-3" />
