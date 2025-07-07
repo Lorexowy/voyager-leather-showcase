@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
+import { Analytics } from '@vercel/analytics/react';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -48,6 +49,8 @@ export default function RootLayout({
             },
           }}
         />
+        {/* Vercel Analytics - automatycznie wykrywa środowisko */}
+        <Analytics />
       </body>
     </html>
   );
