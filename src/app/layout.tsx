@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -49,8 +50,11 @@ export default function RootLayout({
             },
           }}
         />
-        {/* Vercel Analytics - automatycznie wykrywa środowisko */}
+        {/* Vercel Analytics - śledzenie ruchu */}
         <Analytics />
+        
+        {/* Vercel Speed Insights - monitorowanie wydajności */}
+        <SpeedInsights />
       </body>
     </html>
   );
