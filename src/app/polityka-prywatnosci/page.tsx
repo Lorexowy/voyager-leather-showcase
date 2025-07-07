@@ -1,9 +1,10 @@
+// src/app/polityka-prywatnosci/page.tsx
 'use client';
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { ArrowLeft, Shield, Mail, Phone, Calendar } from 'lucide-react';
+import { ArrowLeft, Shield, Mail, Phone, Calendar, BarChart3 } from 'lucide-react';
 
 export default function PolitykaPrywatnosciPage() {
   return (
@@ -119,10 +120,37 @@ export default function PolitykaPrywatnosciPage() {
                   <li>Czas wizyty na stronie</li>
                   <li>Strony, które odwiedziłeś</li>
                 </ul>
-                <p className="text-sm text-gray-600 font-light mt-4 bg-gray-50 p-4">
-                  <strong>Uwaga:</strong> W przyszłości planujemy wdrożenie Google Analytics w celu analizy ruchu na stronie. 
-                  O tej zmianie poinformujemy z odpowiednim wyprzedzeniem.
-                </p>
+              </div>
+
+              {/* Analytics Section - professional style */}
+              <div className="bg-white border border-gray-200 p-6">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Dane analityczne</h3>
+                    <p className="text-gray-700 font-light mb-4">
+                      W celu optymalizacji funkcjonowania strony internetowej wykorzystujemy narzędzie 
+                      Vercel Analytics, które zbiera następujące dane:
+                    </p>
+                    <ul className="list-disc list-inside space-y-2 text-gray-700 font-light mb-6">
+                      <li>Liczba odwiedzin stron internetowych</li>
+                      <li>Czas spędzony na poszczególnych stronach</li>
+                      <li>Źródła ruchu internetowego</li>
+                      <li>Podstawowe informacje o urządzeniu (typ, rozdzielczość)</li>
+                      <li>Lokalizacja geograficzna na poziomie kraju lub regionu</li>
+                    </ul>
+                    
+                    <div className="border border-gray-200 p-4">
+                      <h4 className="font-medium text-gray-900 mb-3">Charakterystyka przetwarzania danych analitycznych</h4>
+                      <ul className="text-sm text-gray-700 font-light space-y-2">
+                        <li>• Dane są przetwarzane bez użycia plików cookies</li>
+                        <li>• Wszystkie zebrane informacje są automatycznie anonimizowane</li>
+                        <li>• Przetwarzanie jest zgodne z przepisami RODO/GDPR</li>
+                        <li>• Dane nie są łączone z informacjami osobowymi użytkowników</li>
+                        <li>• Nie ma możliwości identyfikacji konkretnych osób na podstawie zebranych danych</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -157,36 +185,27 @@ export default function PolitykaPrywatnosciPage() {
                   <strong>Podstawa prawna:</strong> prawnie uzasadniony interes administratora (art. 6 ust. 1 lit. f RODO)
                 </p>
               </div>
+
+              <div className="bg-white border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-3">Dane analityczne</h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-700 font-light">
+                  <li>Analiza popularności treści i funkcjonalności strony</li>
+                  <li>Optymalizacja wydajności i użyteczności witryny</li>
+                  <li>Badanie zachowań użytkowników w celu poprawy usług</li>
+                  <li>Generowanie statystyk odwiedzin i użytkowania</li>
+                  <li>Doskonalenie jakości świadczonych usług</li>
+                </ul>
+                <p className="text-sm text-gray-600 font-light mt-3">
+                  <strong>Podstawa prawna:</strong> prawnie uzasadniony interes administratora (art. 6 ust. 1 lit. f RODO)
+                </p>
+              </div>
             </div>
           </section>
 
-          {/* 4. Czas przechowywania */}
+          {/* 4. Udostępnianie danych */}
           <section className="mb-12">
             <h2 className="text-2xl font-light text-gray-900 mb-6 tracking-tight">
-              4. Jak długo przechowujemy dane
-            </h2>
-            <div className="bg-white border border-gray-200 p-6">
-              <ul className="space-y-4 text-gray-700 font-light">
-                <li className="flex items-start space-x-3">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                  <span><strong>Formularz kontaktowy:</strong> do 3 lat od ostatniego kontaktu lub do momentu wycofania zgody</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                  <span><strong>Dane techniczne:</strong> maksymalnie 2 lata od ostatniej wizyty</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                  <span><strong>Logi systemowe:</strong> maksymalnie 12 miesięcy</span>
-                </li>
-              </ul>
-            </div>
-          </section>
-
-          {/* 5. Udostępnianie danych */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-light text-gray-900 mb-6 tracking-tight">
-              5. Komu udostępniamy dane
+              4. Komu udostępniamy dane
             </h2>
             <div className="bg-white border border-gray-200 p-6">
               <p className="text-gray-700 font-light mb-4">
@@ -195,115 +214,153 @@ export default function PolitykaPrywatnosciPage() {
               <ul className="space-y-3 text-gray-700 font-light">
                 <li className="flex items-start space-x-3">
                   <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
+                  <span><strong>Vercel Inc.</strong> - dostawca usług hostingu i narzędzi analitycznych</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
                   <span><strong>Dostawcy usług IT:</strong> hostingu, utrzymania strony internetowej</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                  <span><strong>Dostawcy usług kurierskich:</strong> DPD (w przypadku wysyłki próbek produktów)</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                  <span><strong>Organy publiczne:</strong> jeśli wymaga tego prawo</span>
                 </li>
               </ul>
               <p className="text-sm text-gray-600 font-light mt-4 bg-gray-50 p-4">
-                <strong>Ważne:</strong> Nie sprzedajemy, nie wynajmujemy ani nie udostępniamy Twoich danych osobowych 
-                w celach marketingowych stronom trzecim.
+                <strong>Oświadczenie:</strong> Nie sprzedajemy, nie wynajmujemy ani nie udostępniamy 
+                danych osobowych podmiotom trzecim w celach marketingowych.
               </p>
             </div>
           </section>
 
-          {/* 6. Twoje prawa */}
+          {/* 5. Cookies */}
           <section className="mb-12">
             <h2 className="text-2xl font-light text-gray-900 mb-6 tracking-tight">
-              6. Twoje prawa w związku z danymi osobowymi
+              5. Pliki cookies i technologie śledzące
+            </h2>
+            <div className="bg-white border border-gray-200 p-6">
+              <div className="space-y-4">
+                <div className="border border-gray-200 p-4">
+                  <h4 className="font-medium text-gray-900 mb-2">Informacja o braku cookies analitycznych</h4>
+                  <p className="text-gray-700 font-light text-sm">
+                    Nasza strona internetowa nie wykorzystuje plików cookies do celów analitycznych. 
+                    System Vercel Analytics funkcjonuje w oparciu o technologie zachowujące prywatność użytkowników, 
+                    bez konieczności przechowywania jakichkolwiek danych w przeglądarce internetowej.
+                  </p>
+                </div>
+                
+                <p className="text-gray-700 font-light">
+                  Strona może wykorzystywać wyłącznie następujące rodzaje plików cookies:
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-gray-700 font-light">
+                  <li><strong>Cookies techniczne</strong> - niezbędne do prawidłowego funkcjonowania strony</li>
+                  <li><strong>Cookies sesyjne</strong> - zapewniające bezpieczeństwo podczas przeglądania</li>
+                  <li><strong>Cookies preferencji</strong> - zapamiętujące ustawienia użytkownika</li>
+                </ul>
+                
+                <p className="text-gray-700 font-light">
+                  Wymienione pliki cookies nie wymagają zgody użytkownika, ponieważ są niezbędne 
+                  do prawidłowego świadczenia usług drogą elektroniczną.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* 6. Czas przechowywania */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-light text-gray-900 mb-6 tracking-tight">
+              6. Okres przechowywania danych
+            </h2>
+            <div className="bg-white border border-gray-200 p-6">
+              <ul className="space-y-4 text-gray-700 font-light">
+                <li className="flex items-start space-x-3">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
+                  <span><strong>Dane z formularza kontaktowego:</strong> maksymalnie 3 lata od ostatniego kontaktu lub do momentu wycofania zgody</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
+                  <span><strong>Dane techniczne:</strong> maksymalnie 2 lata od ostatniej wizyty na stronie</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
+                  <span><strong>Dane analityczne:</strong> zgodnie z polityką Vercel Inc., maksymalnie 2 lata w formie zanonimizowanej</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
+                  <span><strong>Logi systemowe:</strong> maksymalnie 12 miesięcy od wygenerowania</span>
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          {/* 7. Twoje prawa */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-light text-gray-900 mb-6 tracking-tight">
+              7. Prawa osób, których dane dotyczą
             </h2>
             <div className="bg-white border border-gray-200 p-6">
               <p className="text-gray-700 font-light mb-6">
-                Zgodnie z RODO przysługują Ci następujące prawa:
+                Zgodnie z przepisami RODO przysługują Ci następujące uprawnienia:
               </p>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Prawo dostępu</h4>
-                    <p className="text-sm text-gray-600 font-light">Możesz żądać informacji o tym, jakie dane przetwarzamy</p>
+                    <h4 className="font-medium text-gray-900 mb-2">Prawo dostępu do danych</h4>
+                    <p className="text-sm text-gray-600 font-light">Możliwość uzyskania informacji o przetwarzanych danych osobowych</p>
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-900 mb-2">Prawo do sprostowania</h4>
-                    <p className="text-sm text-gray-600 font-light">Możesz żądać poprawienia nieprawidłowych danych</p>
+                    <p className="text-sm text-gray-600 font-light">Możliwość żądania poprawienia nieprawidłowych lub niepełnych danych</p>
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-900 mb-2">Prawo do usunięcia</h4>
-                    <p className="text-sm text-gray-600 font-light">Możesz żądać usunięcia swoich danych</p>
+                    <p className="text-sm text-gray-600 font-light">Możliwość żądania usunięcia danych osobowych w określonych przypadkach</p>
                   </div>
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Prawo do ograniczenia</h4>
-                    <p className="text-sm text-gray-600 font-light">Możesz żądać ograniczenia przetwarzania danych</p>
+                    <h4 className="font-medium text-gray-900 mb-2">Prawo do ograniczenia przetwarzania</h4>
+                    <p className="text-sm text-gray-600 font-light">Możliwość żądania ograniczenia zakresu przetwarzania danych</p>
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Prawo do przenoszenia</h4>
-                    <p className="text-sm text-gray-600 font-light">Możesz otrzymać swoje dane w formacie strukturalnym</p>
+                    <h4 className="font-medium text-gray-900 mb-2">Prawo do przenoszenia danych</h4>
+                    <p className="text-sm text-gray-600 font-light">Możliwość otrzymania danych w formacie strukturalnym</p>
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-900 mb-2">Prawo sprzeciwu</h4>
-                    <p className="text-sm text-gray-600 font-light">Możesz sprzeciwić się przetwarzaniu swoich danych</p>
+                    <p className="text-sm text-gray-600 font-light">Możliwość wniesienia sprzeciwu wobec przetwarzania danych</p>
                   </div>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* 7. Bezpieczeństwo */}
+          {/* 8. Bezpieczeństwo */}
           <section className="mb-12">
             <h2 className="text-2xl font-light text-gray-900 mb-6 tracking-tight">
-              7. Bezpieczeństwo danych
+              8. Bezpieczeństwo danych
             </h2>
             <div className="bg-white border border-gray-200 p-6">
               <p className="text-gray-700 font-light mb-4">
-                Stosujemy odpowiednie środki techniczne i organizacyjne w celu ochrony Twoich danych osobowych:
+                Stosujemy odpowiednie środki techniczne i organizacyjne w celu zapewnienia bezpieczeństwa danych osobowych:
               </p>
               <ul className="space-y-2 text-gray-700 font-light">
                 <li className="flex items-start space-x-3">
                   <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                  <span>Szyfrowanie połączenia SSL/TLS</span>
+                  <span>Szyfrowanie transmisji danych protokołem SSL/TLS</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                  <span>Regularne tworzenie kopii zapasowych</span>
+                  <span>Regularne wykonywanie kopii zapasowych danych</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                  <span>Ograniczony dostęp do danych osobowych</span>
+                  <span>Ograniczenie dostępu do danych osobowych wyłącznie do upoważnionych osób</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                  <span>Monitoring bezpieczeństwa systemów</span>
+                  <span>Ciągły monitoring bezpieczeństwa systemów informatycznych</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
+                  <span>Wykorzystanie technologii analitycznych zachowujących prywatność użytkowników</span>
                 </li>
               </ul>
-            </div>
-          </section>
-
-          {/* 8. Cookies */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-light text-gray-900 mb-6 tracking-tight">
-              8. Pliki cookies
-            </h2>
-            <div className="bg-white border border-gray-200 p-6">
-              <p className="text-gray-700 font-light mb-4">
-                Obecnie nasza strona wykorzystuje jedynie podstawowe pliki cookies niezbędne do jej funkcjonowania.
-              </p>
-              <div className="bg-blue-50 border border-blue-200 p-4 mb-4">
-                <p className="text-blue-900 font-light text-sm">
-                  <strong>Planowane zmiany:</strong> W przyszłości planujemy wdrożenie Google Analytics. 
-                  Przed wprowadzeniem tej zmiany zostaniesz poinformowany i będziesz mógł wyrazić zgodę 
-                  na używanie cookies analitycznych.
-                </p>
-              </div>
-              <p className="text-gray-700 font-light">
-                Możesz w każdej chwili zmienić ustawienia cookies w swojej przeglądarce internetowej.
-              </p>
             </div>
           </section>
 
@@ -314,7 +371,7 @@ export default function PolitykaPrywatnosciPage() {
             </h2>
             <div className="bg-white border border-gray-200 p-6">
               <p className="text-gray-700 font-light mb-4">
-                W sprawach dotyczących ochrony danych osobowych możesz skontaktować się z nami:
+                W sprawach dotyczących przetwarzania danych osobowych można skontaktować się z administratorem:
               </p>
               <div className="bg-gray-50 p-6 border-l-4 border-gray-900">
                 <div className="space-y-3">
@@ -333,8 +390,9 @@ export default function PolitykaPrywatnosciPage() {
                 </div>
               </div>
               <p className="text-sm text-gray-600 font-light mt-4">
-                Masz również prawo złożyć skargę do Prezesa Urzędu Ochrony Danych Osobowych, 
-                jeśli uważasz, że przetwarzanie Twoich danych osobowych narusza przepisy RODO.
+                Osobie, której dane dotyczą, przysługuje również prawo wniesienia skargi do Prezesa 
+                Urzędu Ochrony Danych Osobowych, w przypadku uznania, że przetwarzanie danych osobowych 
+                narusza przepisy rozporządzenia RODO.
               </p>
             </div>
           </section>
@@ -346,9 +404,9 @@ export default function PolitykaPrywatnosciPage() {
             </h2>
             <div className="bg-white border border-gray-200 p-6">
               <p className="text-gray-700 font-light">
-                Zastrzegamy sobie prawo do wprowadzania zmian w niniejszej polityce prywatności. 
-                O wszelkich istotnych zmianach poinformujemy poprzez umieszczenie odpowiedniej informacji na stronie internetowej. 
-                Zalecamy regularne sprawdzanie treści polityki prywatności.
+                Administrator zastrzega sobie prawo do wprowadzania zmian w niniejszej polityce prywatności. 
+                Informacja o istotnych zmianach zostanie umieszczona na stronie internetowej. 
+                Zaleca się regularne zapoznawanie się z treścią polityki prywatności w celu śledzenia ewentualnych aktualizacji.
               </p>
             </div>
           </section>
@@ -356,24 +414,24 @@ export default function PolitykaPrywatnosciPage() {
 
         {/* CTA */}
         <div className="mt-16 bg-gray-900 text-white p-8 text-center">
-          <h3 className="text-2xl font-light mb-4 tracking-tight">Masz pytania?</h3>
+          <h3 className="text-2xl font-light mb-4 tracking-tight">Pytania dotyczące polityki prywatności</h3>
           <p className="text-gray-300 mb-8 font-light leading-relaxed">
-            Jeśli masz jakiekolwiek pytania dotyczące naszej polityki prywatności, 
-            skontaktuj się z nami bez wahania.
+            W przypadku pytań lub wątpliwości dotyczących niniejszej polityki prywatności 
+            prosimy o kontakt z administratorem danych.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/kontakt"
               className="inline-flex items-center justify-center px-8 py-3 bg-white text-gray-900 font-light hover:bg-gray-100 transition-colors uppercase tracking-wider"
             >
-              Skontaktuj się z nami
+              Formularz kontaktowy
             </Link>
             <a
               href="mailto:voyager.sopel@gmail.com"
               className="inline-flex items-center justify-center px-8 py-3 border border-white text-white font-light hover:bg-white hover:text-gray-900 transition-colors uppercase tracking-wider"
             >
               <Mail className="w-4 h-4 mr-3" />
-              Napisz email
+              Wyślij email
             </a>
           </div>
         </div>
