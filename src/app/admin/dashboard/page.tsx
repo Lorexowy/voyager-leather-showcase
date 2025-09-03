@@ -12,6 +12,7 @@ import {
   deleteProduct as deleteProductFirebase,
   getProductsStats 
 } from '@/lib/products';
+import { getUnreadContactMessagesCount } from '@/lib/contact'; // NOWA FUNKCJA
 import { 
   Package, 
   Plus, 
@@ -49,6 +50,7 @@ export default function AdminDashboard() {
     inactive: 0,
     byCategory: {} as Record<ProductCategory, { total: number; active: number }>
   });
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0); // NOWY STAN
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | 'all'>('all');
@@ -86,8 +88,20 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (isAdmin) {
       fetchProducts();
+      fetchUnreadMessagesCount(); // NOWE WYWOŁANIE
     }
   }, [isAdmin]);
+
+  // NOWA FUNKCJA do pobierania liczby nieprzeczytanych wiadomości
+  const fetchUnreadMessagesCount = async () => {
+    try {
+      const count = await getUnreadContactMessagesCount();
+      setUnreadMessagesCount(count);
+    } catch (error: any) {
+      console.error('Error fetching unread messages count:', error);
+      // Nie pokazujemy błędu użytkownikowi - to tylko licznik
+    }
+  };
 
   // Funkcja ładowania produktów
   const fetchProducts = async () => {
@@ -103,6 +117,15 @@ export default function AdminDashboard() {
       toast.error(error.message || 'Nie udało się załadować produktów');
     } finally {
       setIsLoadingProducts(false);
+    }
+  };
+
+  // ZAKTUALIZOWANA funkcja zmiany zakładki - odświeża licznik wiadomości
+  const handleTabChange = (tab: 'products' | 'messages' | 'admins') => {
+    setActiveTab(tab);
+    // Jeśli przechodzimy na zakładkę wiadomości, odśwież licznik
+    if (tab === 'messages') {
+      fetchUnreadMessagesCount();
     }
   };
 
@@ -262,12 +285,12 @@ export default function AdminDashboard() {
           })}
         </div>
 
-        {/* Tab Navigation */}
+        {/* Tab Navigation - ZAKTUALIZOWANA SEKCJA Z BADGE'EM */}
         <div className="mb-8">
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8">
               <button
-                onClick={() => setActiveTab('products')}
+                onClick={() => handleTabChange('products')}
                 className={`py-2 px-1 border-b-2 font-light text-sm transition-colors ${
                   activeTab === 'products'
                     ? 'border-gray-900 text-gray-900'
@@ -281,8 +304,8 @@ export default function AdminDashboard() {
               </button>
               
               <button
-                onClick={() => setActiveTab('messages')}
-                className={`py-2 px-1 border-b-2 font-light text-sm transition-colors ${
+                onClick={() => handleTabChange('messages')}
+                className={`py-2 px-1 border-b-2 font-light text-sm transition-colors relative ${
                   activeTab === 'messages'
                     ? 'border-gray-900 text-gray-900'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -291,11 +314,17 @@ export default function AdminDashboard() {
                 <div className="flex items-center space-x-2">
                   <Mail className="w-4 h-4" />
                   <span>Wiadomości</span>
+                  {/* NOWY BADGE Z LICZBĄ NIEPRZECZYTANYCH */}
+                  {unreadMessagesCount > 0 && (
+                    <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                      {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
+                    </span>
+                  )}
                 </div>
               </button>
 
               <button
-                onClick={() => setActiveTab('admins')}
+                onClick={() => handleTabChange('admins')}
                 className={`py-2 px-1 border-b-2 font-light text-sm transition-colors ${
                   activeTab === 'admins'
                     ? 'border-gray-900 text-gray-900'
@@ -663,10 +692,10 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Messages Tab */}
+        {/* Messages Tab - ZAKTUALIZOWANA SEKCJA */}
         {activeTab === 'messages' && (
           <div>
-            <ContactMessagesPanel />
+            <ContactMessagesPanel onMessagesChange={fetchUnreadMessagesCount} />
           </div>
         )}
 

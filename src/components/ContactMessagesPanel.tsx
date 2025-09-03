@@ -17,7 +17,7 @@ import {
   Eye,
   EyeOff,
   MoreVertical,
-  Clock  // Dodaj ten import
+  Clock
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { FirestoreContactMessage } from '@/lib/firestore-types';
@@ -32,7 +32,12 @@ import ConfirmDialog from './ConfirmDialog';
 
 type FilterType = 'all' | 'unread' | 'read' | 'replied' | 'pending';
 
-export default function ContactMessagesPanel() {
+// NOWY INTERFACE - dodanie callbacku
+interface ContactMessagesPanelProps {
+  onMessagesChange?: () => void; // Callback wywoływany gdy zmienia się status wiadomości
+}
+
+export default function ContactMessagesPanel({ onMessagesChange }: ContactMessagesPanelProps) {
   const [messages, setMessages] = useState<FirestoreContactMessage[]>([]);
   const [filteredMessages, setFilteredMessages] = useState<FirestoreContactMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,7 +48,7 @@ export default function ContactMessagesPanel() {
   const [messageToDelete, setMessageToDelete] = useState<FirestoreContactMessage | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Pobierz wiadomości przy pierwszym załadowaniu
+  // Pobierz wiadomości przy pierwszym renderze
   useEffect(() => {
     fetchMessages();
   }, []);
@@ -93,6 +98,7 @@ export default function ContactMessagesPanel() {
     }
   };
 
+  // ZAKTUALIZOWANA funkcja - dodanie callbacku
   const handleMarkAsRead = async (messageId: string, isRead: boolean) => {
     try {
       if (isRead) {
@@ -102,17 +108,26 @@ export default function ContactMessagesPanel() {
         await markMessageAsRead(messageId);
         toast.success('Oznaczono jako przeczytane');
       }
-      fetchMessages();
+      await fetchMessages();
+      // Wywołaj callback aby odświeżyć licznik w dashboard
+      if (onMessagesChange) {
+        onMessagesChange();
+      }
     } catch (error: any) {
       toast.error(error.message);
     }
   };
 
+  // ZAKTUALIZOWANA funkcja - dodanie callbacku
   const handleMarkAsReplied = async (messageId: string) => {
     try {
       await markMessageAsReplied(messageId);
       toast.success('Oznaczono jako odpowiedziane');
-      fetchMessages();
+      await fetchMessages();
+      // Wywołaj callback aby odświeżyć licznik w dashboard
+      if (onMessagesChange) {
+        onMessagesChange();
+      }
     } catch (error: any) {
       toast.error(error.message);
     }
@@ -123,6 +138,7 @@ export default function ContactMessagesPanel() {
     setShowDeleteDialog(true);
   };
 
+  // ZAKTUALIZOWANA funkcja - dodanie callbacku
   const confirmDeleteMessage = async () => {
     if (!messageToDelete) return;
 
@@ -133,7 +149,11 @@ export default function ContactMessagesPanel() {
       setShowDeleteDialog(false);
       setMessageToDelete(null);
       setSelectedMessage(null);
-      fetchMessages();
+      await fetchMessages();
+      // Wywołaj callback aby odświeżyć licznik w dashboard
+      if (onMessagesChange) {
+        onMessagesChange();
+      }
     } catch (error: any) {
       toast.error(error.message);
     } finally {

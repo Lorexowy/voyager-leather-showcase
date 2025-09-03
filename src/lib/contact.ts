@@ -8,6 +8,7 @@ import {
   query, 
   orderBy, 
   where,
+  getCountFromServer, // NOWY IMPORT dla wydajnego liczenia
   Timestamp 
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -84,6 +85,29 @@ export const getUnreadContactMessages = async (): Promise<FirestoreContactMessag
   } catch (error) {
     console.error('Error fetching unread messages:', error);
     throw new Error('Nie udało się pobrać nieprzeczytanych wiadomości');
+  }
+};
+
+// NOWA FUNKCJA - Pobierz tylko liczbę nieprzeczytanych wiadomości (wydajnie)
+export const getUnreadContactMessagesCount = async (): Promise<number> => {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.CONTACT_MESSAGES),
+      where('isRead', '==', false)
+    );
+    
+    const snapshot = await getCountFromServer(q);
+    return snapshot.data().count;
+  } catch (error) {
+    console.error('Error fetching unread messages count:', error);
+    // Fallback - jeśli getCountFromServer nie działa, używamy zwykłego zapytania
+    try {
+      const unreadMessages = await getUnreadContactMessages();
+      return unreadMessages.length;
+    } catch (fallbackError) {
+      console.error('Fallback count also failed:', fallbackError);
+      return 0; // Zwróć 0 zamiast błędu - badge po prostu nie pokaże się
+    }
   }
 };
 
