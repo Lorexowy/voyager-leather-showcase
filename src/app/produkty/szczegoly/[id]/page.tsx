@@ -10,6 +10,56 @@ import { ArrowLeft, ArrowRight, Heart, Share2, Ruler, Palette, RefreshCw, AlertC
 import { Product, formatDimensions } from '@/types';
 import { getProductById, getSimilarProducts } from '@/lib/products';
 
+// Component for related product cards with proper image handling
+function RelatedProductCard({ 
+  product, 
+  getCategoryDisplayName 
+}: { 
+  product: Product; 
+  getCategoryDisplayName: (category: string) => string;
+}) {
+  const [imageError, setImageError] = useState(false);
+
+  return (
+    <Link
+      href={`/produkty/szczegoly/${product.id}`}
+      className="group bg-white border border-gray-100 overflow-hidden hover:border-gray-900 transition-all duration-300"
+    >
+      <div className="aspect-square bg-gray-50 relative overflow-hidden">
+        {product.mainImage && !imageError ? (
+          <img
+            src={product.mainImage}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={() => setImageError(true)}
+            onLoad={() => setImageError(false)}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center text-gray-300">
+              <div className="w-12 h-12 mx-auto mb-3 border border-gray-200 flex items-center justify-center">
+                <span className="text-lg font-light text-gray-400">
+                  {product.name.charAt(0)}
+                </span>
+              </div>
+              <p className="text-xs font-light text-gray-400 uppercase tracking-wider">Zdjęcie produktu</p>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      <div className="p-6">
+        <h3 className="font-light text-gray-900 group-hover:text-gray-700 transition-colors">
+          {product.name}
+        </h3>
+        <p className="text-sm text-gray-500 mt-1 font-light">
+          {getCategoryDisplayName(product.category)}
+        </p>
+      </div>
+    </Link>
+  );
+}
+
 export default function ProductDetailsPage() {
   const params = useParams();
   const [product, setProduct] = useState<Product | null>(null);
@@ -287,32 +337,11 @@ export default function ProductDetailsPage() {
             
             <div className="grid md:grid-cols-3 gap-8">
               {relatedProducts.map((relatedProduct) => (
-                <Link
-                  key={relatedProduct.id}
-                  href={`/produkty/szczegoly/${relatedProduct.id}`}
-                  className="group bg-white border border-gray-100 overflow-hidden hover:border-gray-900 transition-all duration-300"
-                >
-                  <div className="aspect-square bg-gray-50 relative">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center text-gray-300">
-                        <div className="w-12 h-12 mx-auto mb-3 border border-gray-200 flex items-center justify-center">
-                          <span className="text-lg font-light">
-                            {relatedProduct.name.charAt(0)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="p-6">
-                    <h3 className="font-light text-gray-900 group-hover:text-gray-700 transition-colors">
-                      {relatedProduct.name}
-                    </h3>
-                    <p className="text-sm text-gray-500 mt-1 font-light">
-                      {getCategoryDisplayName(relatedProduct.category)}
-                    </p>
-                  </div>
-                </Link>
+                <RelatedProductCard 
+                  key={relatedProduct.id} 
+                  product={relatedProduct} 
+                  getCategoryDisplayName={getCategoryDisplayName}
+                />
               ))}
             </div>
           </div>
