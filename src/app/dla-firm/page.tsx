@@ -40,19 +40,17 @@ const benefits = [
   { icon: Award, title: 'Najwyższa Jakość', description: '21 lat doświadczenia w produkcji galanterii. Tylko wyselekcjonowane skóry i kontrola jakości na każdym etapie.' },
   { icon: Shield, title: 'Gwarancja i Serwis', description: 'Pełna gwarancja na produkty firmowe. Szybki serwis, wymiany i wsparcie posprzedażowe.' },
   { icon: Clock, title: 'Terminowość', description: 'Standardowa realizacja 2–3 tygodnie. Priorytetowe zlecenia realizujemy w trybie przyspieszonym.' },
-  { icon: Sparkles, title: 'Personalizacja Premium', description: 'Tłoczenia, grawery, dedykowane kolory nici i krawędzi, opakowania brandowane – w pełni pod Twoją markę.' }
+  { icon: Sparkles, title: 'Personalizacja Premium', description: 'Tłoczenia, grawery, wybrane kolory skóry – w pełni pod Twoją markę.' }
 ];
 
 const faqs = [
-  { q: 'Czy mogę zamówić próbki produktów przed złożeniem zamówienia?', a: 'Tak, oferujemy próbki materiałów i wykończeń. Istnieje też możliwość przygotowania prototypu produktu.' },
-  { q: 'Czy wykonujecie projekty z logo mojej firmy?', a: 'Tak, każde zamówienie może być spersonalizowane logotypem – poprzez tłoczenie, grawer laserowy lub nadruk.' },
-  { q: 'Jak wygląda proces płatności?', a: 'Po akceptacji projektu wystawiamy fakturę pro forma. Produkcja rusza po opłaceniu zaliczki (zwykle 30–50%). Pozostała kwota rozliczana jest przed wysyłką.' },
-  { q: 'Czy mogę zamówić różne kolory w ramach jednego zamówienia?', a: 'Tak, możemy przygotować partię w różnych wariantach kolorystycznych skóry, nici i wykończeń – w ramach jednego zamówienia.' },
-  { q: 'Czy oferujecie opakowania prezentowe z moim brandingiem?', a: 'Tak, przygotowujemy pudełka, woreczki i banderole z logotypem, idealne na prezenty firmowe.' },
-  { q: 'Czy mogę liczyć na rabat przy większych zamówieniach?', a: 'Tak, przy dużych zamówieniach przygotowujemy indywidualne wyceny oraz rabaty wolumenowe.' },
-  { q: 'Czy wysyłacie produkty za granicę?', a: 'Tak, realizujemy zamówienia dla klientów z całej Europy. Organizujemy transport kurierski lub spedycyjny.' },
+  { q: 'Czy mogę zamówić próbki produktów przed złożeniem zamówienia?', a: 'Tak, oferujemy próbki materiałów i wykończeń. Cena takiej próbki jest zależna od produktu i zakresu personalizacji. Po szczegóły zapraszamy do kontaktu prywatnego ponieważ do każdego zamówienia podchodzimy indywidualnie.' },
+  { q: 'Czy wykonujecie projekty z logo mojej firmy?', a: 'Tak, możemy wykonać projekt z logotypem Państwa firmy.' },
+  { q: 'Jak wygląda proces płatności?', a: 'Po akceptacji projektu wystawiamy fakturę pro forma. Pełna kwota rozliczana jest przed wysyłką.' },
+  { q: 'Czy mogę zamówić różne kolory w ramach jednego zamówienia?', a: 'Tak, możemy przygotować partię w różnych wariantach kolorystycznych skóry w ramach jednego zamówienia.' },
+  { q: 'Czy wysyłacie produkty za granicę?', a: 'Tak, realizujemy zamówienia dla klientów z całej Europy. Organizujemy transport kurierski.' },
   { q: 'Jak długo utrzymuje się grawer lub tłoczenie?', a: 'Stosujemy wyłącznie profesjonalne techniki, dzięki czemu personalizacja jest trwała i odporna na ścieranie.' },
-  { q: 'Czy wszystkie produkty są wykonywane ze skóry naturalnej?', a: 'Tak, korzystamy wyłącznie z wyselekcjonowanych skór naturalnych. Na życzenie dostępne są także opcje wegańskie.' },
+  { q: 'Czy wszystkie produkty są wykonywane ze skóry naturalnej?', a: 'Tak, korzystamy wyłącznie z wyselekcjonowanych skór naturalnych.' },
   { q: 'Czy wystawiacie faktury VAT?', a: 'Tak, wszystkie zamówienia realizujemy z pełną dokumentacją księgową – faktura VAT jest standardem.' },
   { q: 'Czy oferujecie gwarancję na produkty?', a: 'Tak, każdy produkt objęty jest gwarancją producenta. W razie potrzeby zapewniamy również serwis i naprawy.' }
 ];
