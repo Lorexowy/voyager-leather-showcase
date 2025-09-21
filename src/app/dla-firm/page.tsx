@@ -112,7 +112,7 @@ export default function DlaFirmPage() {
                     fill
                     sizes="(max-width:1024px) 100vw, 50vw"
                     priority={idx === 0}
-                    className="object-contain p-6 sm:p-8 md:object-cover md:p-0"
+                    className="object-cover p-0"
                   />
                   <div className="absolute inset-0 bg-gradient-to-tr from-black/5 via-transparent to-transparent pointer-events-none md:from-black/10" />
                 </div>
