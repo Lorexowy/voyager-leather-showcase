@@ -17,22 +17,22 @@ import Link from 'next/link';
 
 const services = [
   {
-    title: 'Gadżety',
-    description: 'Stylowe gadżety skórzane — breloki, etui i inne drobne akcesoria z możliwością personalizacji. Doskonałe jako eleganckie dodatki dla pracowników oraz klientów biznesowych.',
+    title: 'Grawer logotypu',
+    description: 'Oferujemy grawer logotypu dla firm. Grawerujemy logotypy na paskach, torebkach, plecakach i innych produktach skórzanych, oraz elementach metalowych.',
     bullets: ['MOQ od 25 szt.', 'Grawer laserowy / tłoczenie', 'Różne szerokości i kolory'],
-    image: '/images/services/gadzetydlafirm.png'
+    image: '/images/services/grawerydlafirmy.png'
   },
   {
-    title: 'Prezenty',
-    description: 'Wyjątkowe prezenty skórzane — portfele, dokumentówki, etui. Perfekcyjne jako podarunki dla klientów i partnerów biznesowych.',
+    title: 'Tłoczenie logotypu',
+    description: 'Tłoczymy logotypy firm na naszych produktach skórzanych. Używamy najwyższej jakości matryc do tłoczenia w skórze, aby efekt był jak najbardziej trwały i estetyczny.',
     bullets: ['Indywidualne opakowania', 'Personalizacja kolorów i nici', 'Opcja brandingu pudełek'],
-    image: '/images/services/prezentydlafirm.png'
+    image: '/images/services/tloczeniedlafirm.png'
   },
   {
     title: 'Współpraca',
-    description: 'Oferujemy współpracę stałą i okresową, w zależności od potrzeb klienta.',
+    description: 'Oferujemy współpracę stałą i okresową w zależności od potrzeb klienta.',
     bullets: ['Pakiety onboardingowe', 'Certyfikaty jakości', 'Możliwość dropshippingu'],
-    image: '/images/services/wspolpracadlafirm.png'
+    image: '/images/services/usciskdlafirm.png'
   }
 ];
 
