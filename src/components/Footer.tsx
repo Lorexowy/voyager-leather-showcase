@@ -74,6 +74,14 @@ export default function Footer() {
               </li>
               <li>
                 <Link 
+                  href="/dla-firm" 
+                  className="text-gray-400 hover:text-white transition-colors font-light"
+                >
+                  Dla Firm
+                </Link>
+              </li>
+              <li>
+                <Link 
                   href="/kontakt" 
                   className="text-gray-400 hover:text-white transition-colors font-light"
                 >

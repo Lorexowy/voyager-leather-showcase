@@ -156,6 +156,13 @@ export default function Header() {
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
             </Link>
             <Link 
+              href="/dla-firm" 
+              className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light relative group"
+            >
+              Dla Firm
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
+            </Link>
+            <Link 
               href="/kontakt" 
               className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light relative group"
             >
@@ -186,8 +193,8 @@ export default function Header() {
 
         {/* Mobile Navigation - clean with animation */}
         <div
-          className={`md:hidden border-t border-gray-100 overflow-hidden transition-all duration-300 ${
-            isMenuOpen ? 'max-h-96 py-6' : 'max-h-0 py-0'
+          className={`md:hidden border-t border-gray-100 transition-all duration-300 ${
+            isMenuOpen ? 'max-h-[80vh] py-6 overflow-y-auto' : 'max-h-0 py-0 overflow-hidden'
           }`}
         >
           <div className="flex flex-col space-y-6">
@@ -221,6 +228,13 @@ export default function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               O nas
+            </Link>
+            <Link 
+              href="/dla-firm" 
+              className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light transform hover:translate-x-1"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Dla Firm
             </Link>
             <Link 
               href="/kontakt" 
