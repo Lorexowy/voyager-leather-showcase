@@ -1,35 +1,35 @@
 'use client';
 
-import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import Image from 'next/image';
+import Header from '@/components/Header';
 import {
+  ArrowRight,
   Award,
-  Shield,
   Clock,
-  Sparkles,
+  HelpCircle,
   Mail,
   Phone,
-  ArrowRight,
-  HelpCircle
+  Shield,
+  Sparkles
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 const services = [
   {
-    title: 'Grawer logotypu',
+    title: 'GRAWER LOGOTYPU',
     description: 'Oferujemy grawer logotypu dla firm. Grawerujemy logotypy na paskach, torebkach, plecakach i innych produktach skórzanych, oraz elementach metalowych.',
     bullets: ['MOQ od 25 szt.', 'Grawer laserowy / tłoczenie', 'Różne szerokości i kolory'],
     image: '/images/services/grawerydlafirmy.png'
   },
   {
-    title: 'Tłoczenie logotypu',
+    title: 'TŁOCZENIE LOGOTYPU',
     description: 'Tłoczymy logotypy firm na naszych produktach skórzanych. Używamy najwyższej jakości matryc do tłoczenia w skórze, aby efekt był jak najbardziej trwały i estetyczny.',
     bullets: ['Indywidualne opakowania', 'Personalizacja kolorów i nici', 'Opcja brandingu pudełek'],
     image: '/images/services/tloczeniedlafirm.png'
   },
   {
-    title: 'Współpraca',
+    title: 'WSPÓŁPRACA',
     description: 'Oferujemy współpracę stałą i okresową w zależności od potrzeb klienta.',
     bullets: ['Pakiety onboardingowe', 'Certyfikaty jakości', 'Możliwość dropshippingu'],
     image: '/images/services/usciskdlafirm.png'
@@ -70,7 +70,7 @@ export default function DlaFirmPage() {
       {/* Hero */}
       <section className="relative min-h-[85vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0 lg:p-8">
-          <div className="relative w-full h-full lg:border-4 lg:border-white/20 lg:rounded-lg lg:overflow-hidden">
+          <div className="relative w-full h-full lg:border-4 lg:border-white/20 lg:rounded-3xl lg:overflow-hidden">
             <Image src="/images/herobanerdlafirm.png" alt="Voyager - Produkty skórzane dla firm" fill className="object-cover object-center" priority sizes="100vw" />
             <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/10"></div>
           </div>
@@ -90,7 +90,7 @@ export default function DlaFirmPage() {
                   <span>Zamów wycenę</span>
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <Link href="#uslugi" className="inline-flex items-center justify-center px-8 py-4 rounded-lg border border-white/70 text-white font-medium hover:bg-white/10 transition-all duration-300 uppercase tracking-wide">
+                <Link href="#uslugi" className="inline-flex items-center justify-center px-8 py-4 rounded-lg border border-white/70 text-white font-medium hover:bg-white/10 hover:backdrop-blur-sm transition-all duration-300 uppercase tracking-wide">
                   <span>Zobacz usługi</span>
                 </Link>
               </div>
@@ -105,7 +105,7 @@ export default function DlaFirmPage() {
           {services.map((item, idx) => (
             <div key={idx} className={`grid lg:grid-cols-2 gap-10 items-center ${idx % 2 === 1 ? 'lg:[&>*:first-child]:order-2' : ''}`}>
               <div className="relative">
-              <div className="relative w-full aspect-[16/10] sm:aspect-[5/4] lg:aspect-[16/9] overflow-hidden rounded-2xl ring-1 ring-black/5 shadow-sm bg-white">
+              <div className="relative w-full aspect-[16/10] sm:aspect-[5/4] lg:aspect-[16/9] overflow-hidden rounded-3xl ring-1 ring-black/5 shadow-xl bg-white hover:shadow-2xl duration-300">
                   <Image
                     src={item.image}
                     alt={item.title}
@@ -119,8 +119,8 @@ export default function DlaFirmPage() {
               </div>
               <div>
                 <div className="max-w-lg">
-                  <h3 className="text-3xl sm:text-4xl font-light text-gray-900 mb-4 tracking-tight">{item.title}</h3>
-                  <p className="text-gray-600 font-light leading-relaxed mb-8">{item.description}</p>
+                  <h3 className="text-3xl sm:text-4xl font-heavy text-gray-900 mb-4 tracking-tight">{item.title}</h3>
+                  <p className="text-gray-600 font-light leading-relaxed mb-8 hover:text-gray-900 transition-colors duration-300 tracking-wide">{item.description}</p>
                   <div className="flex flex-wrap gap-3">
                     <Link href="#kontakt" className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-gray-900 text-white font-medium hover:bg-black transition-colors duration-300 uppercase tracking-wide shadow-sm">
                       Zapytaj o wycenę
@@ -139,7 +139,7 @@ export default function DlaFirmPage() {
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-light text-gray-900 mb-6 tracking-tight">Dlaczego Wybrać Voyager?</h2>
+            <h2 className="text-4xl font-heavy text-gray-900 mb-6 tracking-tight">Dlaczego Wybrać Voyager?</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light">Ponad 21 lat doświadczenia — kontrola jakości na każdym etapie i wykończenia klasy premium.</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
@@ -163,7 +163,7 @@ export default function DlaFirmPage() {
       <section className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-light text-gray-900 mb-6 tracking-tight">Jak wygląda współpraca?</h2>
+            <h2 className="text-4xl font-heavy text-gray-900 mb-6 tracking-tight">Jak wygląda współpraca?</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light">Prosty i przejrzysty proces od pomysłu do gotowego produktu.</p>
           </div>
           <div className="hidden lg:block">
@@ -207,7 +207,7 @@ export default function DlaFirmPage() {
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full border border-gray-200 mb-4">
               <HelpCircle className="w-6 h-6 text-gray-600" />
             </div>
-            <h2 className="text-3xl sm:text-4xl font-light text-gray-900 mb-4 tracking-tight">Najczęstsze pytania (FAQ)</h2>
+            <h2 className="text-3xl sm:text-4xl font-heavy text-gray-900 mb-4 tracking-tight">Najczęstsze pytania (FAQ)</h2>
             <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto font-light">Zebraliśmy kluczowe informacje o personalizacji, terminach i logistyce. Jeśli masz inne pytania – napisz do nas.</p>
           </div>
           <div className="divide-y divide-gray-200 border border-gray-200 rounded-2xl overflow-hidden">
@@ -229,7 +229,7 @@ export default function DlaFirmPage() {
       {/* CTA */}
       <section id="kontakt" className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-light text-gray-900 mb-6 tracking-tight">Porozmawiajmy o Twoim projekcie</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-6 tracking-tight">Porozmawiajmy o Twoim projekcie</h2>
           <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto font-light">Skontaktuj się z nami, aby omówić zakres, materiały i terminy. Przygotujemy dopasowaną ofertę wraz z próbkami wykończeń.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link href="/kontakt" className="inline-flex items-center justify-center px-8 py-4 rounded-lg bg-gray-900 text-white font-medium hover:bg-black transition-colors duration-300 uppercase tracking-wide shadow-sm">
