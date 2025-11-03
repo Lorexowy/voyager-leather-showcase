@@ -169,6 +169,13 @@ export default function Header() {
               Kontakt
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
             </Link>
+            <Link 
+              href="/alpelia" 
+              className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light relative group"
+            >
+              Sprzedaż detaliczna
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
+            </Link>
           </nav>
 
           {/* Mobile menu button - minimalistyczny */}
@@ -242,6 +249,13 @@ export default function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               Kontakt
+            </Link>
+            <Link 
+              href="/alpelia" 
+              className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light transform hover:translate-x-1"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Sprzedaż detaliczna
             </Link>
           </div>
         </div>
