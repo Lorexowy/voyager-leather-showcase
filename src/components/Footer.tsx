@@ -24,12 +24,8 @@ export default function Footer() {
                   className="filter brightness-0 invert"
                   style={{ 
                     imageRendering: 'crisp-edges',
-                    WebkitImageRendering: '-webkit-optimize-contrast',
                     transform: 'translateZ(0)',
                     backfaceVisibility: 'hidden',
-                    WebkitBackfaceVisibility: 'hidden',
-                    filter: 'brightness(0) invert(1)',
-                    WebkitFilter: 'brightness(0) invert(1)',
                     willChange: 'transform'
                   }}
                 />
