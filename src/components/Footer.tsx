@@ -7,71 +7,7 @@ import { CATEGORIES } from '@/types';
 
 export default function Footer() {
   return (
-    <>
-      <style jsx global>{`
-        footer {
-          background-image: none !important;
-          border-image: none !important;
-          background-repeat: no-repeat !important;
-          background-position: 0 0 !important;
-          background-attachment: scroll !important;
-          -webkit-font-smoothing: antialiased !important;
-          -moz-osx-font-smoothing: grayscale !important;
-          text-rendering: optimizeLegibility !important;
-          transform: translateZ(0) !important;
-          -webkit-transform: translateZ(0) !important;
-          backface-visibility: hidden !important;
-          -webkit-backface-visibility: hidden !important;
-          perspective: 1000px !important;
-          -webkit-perspective: 1000px !important;
-        }
-        footer * {
-          background-image: none !important;
-          border-image: none !important;
-          background-repeat: no-repeat !important;
-          -webkit-font-smoothing: antialiased !important;
-          -moz-osx-font-smoothing: grayscale !important;
-          text-rendering: optimizeLegibility !important;
-        }
-        footer svg,
-        footer svg *,
-        footer svg path,
-        footer svg circle,
-        footer svg rect,
-        footer svg line,
-        footer svg polyline,
-        footer svg polygon,
-        footer svg g {
-          stroke-dasharray: none !important;
-          stroke-dashoffset: 0 !important;
-          stroke-dasharray: 0 !important;
-          stroke: currentColor !important;
-          shape-rendering: geometricPrecision !important;
-          text-rendering: geometricPrecision !important;
-          image-rendering: -webkit-optimize-contrast !important;
-          image-rendering: crisp-edges !important;
-          transform: translateZ(0) !important;
-          -webkit-transform: translateZ(0) !important;
-        }
-        footer img,
-        footer img * {
-          background-image: none !important;
-          border-image: none !important;
-          stroke-dasharray: none !important;
-          image-rendering: -webkit-optimize-contrast !important;
-          image-rendering: crisp-edges !important;
-          transform: translateZ(0) !important;
-          -webkit-transform: translateZ(0) !important;
-        }
-        footer [class*="lucide"] {
-          stroke-dasharray: none !important;
-          stroke-dashoffset: 0 !important;
-          shape-rendering: geometricPrecision !important;
-          transform: translateZ(0) !important;
-          -webkit-transform: translateZ(0) !important;
-        }
-      `}</style>
-      <footer className="bg-gray-900 text-white" style={{ isolation: 'isolate', willChange: 'auto' }}>
+    <footer className="bg-gray-900 text-white footer-fix" style={{ isolation: 'isolate', willChange: 'auto' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main footer content */}
         <div className="py-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(0, 1fr))' }}>
@@ -340,6 +276,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-    </>
   );
 }

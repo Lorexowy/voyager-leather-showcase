@@ -164,3 +164,70 @@ textarea:focus-visible {
 .animate-subtle-bounce {
   animation: subtleBounce 2s ease-in-out infinite;
 }
+
+/* Fix for footer dashed lines issue on Windows PC */
+footer.footer-fix {
+  background-image: none !important;
+  border-image: none !important;
+  background-repeat: no-repeat !important;
+  background-position: 0 0 !important;
+  background-attachment: scroll !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  perspective: 1000px !important;
+  -webkit-perspective: 1000px !important;
+}
+
+footer.footer-fix * {
+  background-image: none !important;
+  border-image: none !important;
+  background-repeat: no-repeat !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+footer.footer-fix svg,
+footer.footer-fix svg *,
+footer.footer-fix svg path,
+footer.footer-fix svg circle,
+footer.footer-fix svg rect,
+footer.footer-fix svg line,
+footer.footer-fix svg polyline,
+footer.footer-fix svg polygon,
+footer.footer-fix svg g {
+  stroke-dasharray: none !important;
+  stroke-dashoffset: 0 !important;
+  stroke-dasharray: 0 !important;
+  stroke: currentColor !important;
+  shape-rendering: geometricPrecision !important;
+  text-rendering: geometricPrecision !important;
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: crisp-edges !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+}
+
+footer.footer-fix img,
+footer.footer-fix img * {
+  background-image: none !important;
+  border-image: none !important;
+  stroke-dasharray: none !important;
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: crisp-edges !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+}
+
+footer.footer-fix [class*="lucide"] {
+  stroke-dasharray: none !important;
+  stroke-dashoffset: 0 !important;
+  shape-rendering: geometricPrecision !important;
+  transform: translateZ(0) !important;
+  -webkit-transform: translateZ(0) !important;
+}
