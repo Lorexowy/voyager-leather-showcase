@@ -10,18 +10,18 @@ export default function Footer() {
     <footer className="bg-gray-900 text-white footer-fix" style={{ isolation: 'isolate', willChange: 'auto' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main footer content */}
-        <div className="py-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(0, 1fr))' }}>
+        <div className="py-12 sm:py-16 lg:py-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 lg:gap-12">
           {/* Company info & Certyfikat */}
           <div className="sm:col-span-2 lg:col-span-1">
             {/* Logo container - naprawiony */}
-            <div className="flex items-center justify-center sm:justify-start mb-8">
-              <div className="w-auto h-auto flex items-center justify-center" style={{ transform: 'translateZ(0)', willChange: 'auto' }}>
+            <div className="flex items-center justify-center sm:justify-start mb-6 sm:mb-8">
+              <div className="w-auto h-auto flex items-center justify-center max-w-[180px] sm:max-w-[200px] lg:max-w-[250px]" style={{ transform: 'translateZ(0)', willChange: 'auto' }}>
                 <Image
                   src="/images/logo/logovoyager.svg"
                   alt="Voyager Logo"
                   width={250}
                   height={250}
-                  className="filter brightness-0 invert"
+                  className="filter brightness-0 invert w-full h-auto"
                   style={{ 
                     imageRendering: 'crisp-edges',
                     transform: 'translateZ(0)',
@@ -32,16 +32,16 @@ export default function Footer() {
               </div>
             </div>
             
-            <p className="text-gray-400 mb-8 leading-relaxed font-light text-center sm:text-left">
+            <p className="text-gray-400 mb-6 sm:mb-8 leading-relaxed font-light text-sm sm:text-base text-center sm:text-left">
               Ekskluzywna galanteria skórzana najwyższej jakości. 
               Tworzymy produkty z pasją i dbałością o każdy detal.
             </p>
             
             {/* Quality Certificate */}
-            <div className="p-4 border border-gray-700 bg-gray-800/30">
-              <div className="flex items-center space-x-3 mb-2">
-                <Award className="w-4 h-4 text-gray-400" />
-                <span className="text-sm font-light text-gray-300 uppercase tracking-wider">Certyfikat Jakości</span>
+            <div className="p-3 sm:p-4 border border-gray-700 bg-gray-800/30">
+              <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
+                <Award className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-light text-gray-300 uppercase tracking-wider">Certyfikat Jakości</span>
               </div>
               <p className="text-xs text-gray-400 font-light leading-relaxed">
                 100% naturalna skóra najwyższej jakości. 
@@ -52,12 +52,12 @@ export default function Footer() {
 
           {/* Navigation & Social */}
           <div className="sm:col-span-1 lg:col-span-1">
-            <h3 className="text-lg font-light mb-8 uppercase tracking-wider">Nawigacja</h3>
-            <ul className="space-y-4 mb-8">
+            <h3 className="text-base sm:text-lg font-light mb-6 sm:mb-8 uppercase tracking-wider">Nawigacja</h3>
+            <ul className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
               <li>
                 <Link 
                   href="/" 
-                  className="text-gray-400 hover:text-white transition-colors font-light"
+                  className="text-gray-400 hover:text-white transition-colors font-light text-sm sm:text-base"
                 >
                   Strona główna
                 </Link>
@@ -65,7 +65,7 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/produkty" 
-                  className="text-gray-400 hover:text-white transition-colors font-light"
+                  className="text-gray-400 hover:text-white transition-colors font-light text-sm sm:text-base"
                 >
                   Wszystkie produkty
                 </Link>
@@ -73,7 +73,7 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/o-nas" 
-                  className="text-gray-400 hover:text-white transition-colors font-light"
+                  className="text-gray-400 hover:text-white transition-colors font-light text-sm sm:text-base"
                 >
                   O nas
                 </Link>
@@ -81,7 +81,7 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/dla-firm" 
-                  className="text-gray-400 hover:text-white transition-colors font-light"
+                  className="text-gray-400 hover:text-white transition-colors font-light text-sm sm:text-base"
                 >
                   Dla Firm
                 </Link>
@@ -89,7 +89,7 @@ export default function Footer() {
               <li>
                 <Link 
                   href="/kontakt" 
-                  className="text-gray-400 hover:text-white transition-colors font-light"
+                  className="text-gray-400 hover:text-white transition-colors font-light text-sm sm:text-base"
                 >
                   Kontakt
                 </Link>
@@ -98,8 +98,8 @@ export default function Footer() {
 
             {/* Social sharing */}
             <div>
-              <h4 className="text-sm font-light mb-4 uppercase tracking-wider text-gray-300">Udostępnij nas</h4>
-              <div className="flex flex-wrap gap-3">
+              <h4 className="text-xs sm:text-sm font-light mb-3 sm:mb-4 uppercase tracking-wider text-gray-300">Udostępnij nas</h4>
+              <div className="flex flex-wrap gap-2 sm:gap-3">
                 <a 
                   href="https://www.facebook.com/sharer/sharer.php?u=https://voyagersopel.pl"
                   target="_blank"
@@ -148,13 +148,13 @@ export default function Footer() {
 
           {/* Categories */}
           <div className="sm:col-span-1 lg:col-span-1">
-            <h3 className="text-lg font-light mb-8 uppercase tracking-wider">Kategorie</h3>
-            <ul className="space-y-4">
+            <h3 className="text-base sm:text-lg font-light mb-6 sm:mb-8 uppercase tracking-wider">Kategorie</h3>
+            <ul className="space-y-3 sm:space-y-4">
               {CATEGORIES.map((category) => (
                 <li key={category.id}>
                   <Link 
                     href={`/produkty/${category.slug}`}
-                    className="text-gray-400 hover:text-white transition-colors font-light"
+                    className="text-gray-400 hover:text-white transition-colors font-light text-sm sm:text-base"
                   >
                     {category.name}
                   </Link>
@@ -165,63 +165,63 @@ export default function Footer() {
 
           {/* Contact info - Enhanced */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <h3 className="text-lg font-light mb-8 uppercase tracking-wider">Kontakt</h3>
+            <h3 className="text-base sm:text-lg font-light mb-6 sm:mb-8 uppercase tracking-wider">Kontakt</h3>
             
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Address */}
-              <div className="flex items-start space-x-4">
-                <MapPin className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
-                <div className="text-gray-400 font-light">
+              <div className="flex items-start space-x-3 sm:space-x-4">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-1 flex-shrink-0" />
+                <div className="text-gray-400 font-light text-sm sm:text-base">
                   <div className="mb-1">Aleja Stefana Batorego 60</div>
                   <div>33-300 Nowy Sącz</div>
                 </div>
               </div>
               
               {/* Phone */}
-              <div className="flex items-start space-x-4">
-                <Phone className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
+              <div className="flex items-start space-x-3 sm:space-x-4">
+                <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-1 flex-shrink-0" />
                 <div>
                   <a 
                     href="tel:+48505461050" 
-                    className="text-gray-400 hover:text-white transition-colors font-light block"
+                    className="text-gray-400 hover:text-white transition-colors font-light block text-sm sm:text-base"
                   >
                     +48 505 461 050
                   </a>
-                  <span className="text-sm text-gray-500 font-light">Obsługa klienta</span>
+                  <span className="text-xs sm:text-sm text-gray-500 font-light">Obsługa klienta</span>
                 </div>
               </div>
               
               {/* Email */}
-              <div className="flex items-start space-x-4">
-                <Mail className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
+              <div className="flex items-start space-x-3 sm:space-x-4">
+                <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-1 flex-shrink-0" />
                 <div>
                   <a 
                     href="mailto:voyager.sopel@gmail.com" 
-                    className="text-gray-400 hover:text-white transition-colors font-light block break-all"
+                    className="text-gray-400 hover:text-white transition-colors font-light block break-all text-sm sm:text-base"
                   >
                     voyager.sopel@gmail.com
                   </a>
-                  <span className="text-sm text-gray-500 font-light">Zapytania ogólne</span>
+                  <span className="text-xs sm:text-sm text-gray-500 font-light">Zapytania ogólne</span>
                 </div>
               </div>
 
               {/* Business Hours */}
-              <div className="flex items-start space-x-4">
-                <Clock className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
-                <div className="text-gray-400 font-light">
-                  <div className="mb-3 font-light">Godziny pracy</div>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
+              <div className="flex items-start space-x-3 sm:space-x-4">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-1 flex-shrink-0" />
+                <div className="text-gray-400 font-light text-sm sm:text-base">
+                  <div className="mb-2 sm:mb-3 font-light">Godziny pracy</div>
+                  <div className="space-y-1 text-xs sm:text-sm">
+                    <div className="flex justify-between gap-2">
                       <span>Pon - Pt:</span>
-                      <span className="ml-2">6:00 - 14:00</span>
+                      <span className="text-gray-300">6:00 - 14:00</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between gap-2">
                       <span>Sobota:</span>
-                      <span className="ml-2 text-gray-500">Zamknięte</span>
+                      <span className="text-gray-500">Zamknięte</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between gap-2">
                       <span>Niedziela:</span>
-                      <span className="ml-2 text-gray-500">Zamknięte</span>
+                      <span className="text-gray-500">Zamknięte</span>
                     </div>
                   </div>
                 </div>
@@ -231,13 +231,13 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="py-8 border-t border-gray-800">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="text-gray-400 text-sm font-light">
+        <div className="py-6 sm:py-8 border-t border-gray-800">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
+            <div className="text-gray-400 text-xs sm:text-sm font-light text-center md:text-left">
               © 2025 Voyager. Wszystkie prawa zastrzeżone.
             </div>
             
-            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-8 text-sm text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 md:gap-8 text-xs sm:text-sm text-center sm:text-left">
               <Link 
                 href="/polityka-prywatnosci" 
                 className="text-gray-400 hover:text-white transition-colors font-light"
@@ -257,7 +257,7 @@ export default function Footer() {
         {/* Developer credit */}
         <div className="py-4 border-t border-gray-800/50">
           <div className="text-center">
-            <p className="text-gray-500 text-xs font-light">
+            <p className="text-gray-500 text-xs font-light px-4">
               Strona zaprojektowana i wykonana przez{' '}
               <a 
                 href="https://www.micheldev.pl" 
