@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import ProductImage from '@/components/ProductImage';
 
 interface ProductGalleryProps {
   images: string[];
@@ -10,7 +11,6 @@ interface ProductGalleryProps {
 
 export default function ProductGallery({ images, productName }: ProductGalleryProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [imageError, setImageError] = useState<{ [key: number]: boolean }>({});
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -24,42 +24,45 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
     setCurrentImageIndex(index);
   };
 
-  const handleImageError = (index: number) => {
-    setImageError(prev => ({ ...prev, [index]: true }));
-  };
-
   const hasValidImages = images.length > 0;
-  const currentImageValid = hasValidImages && !imageError[currentImageIndex];
+
+  const mainImageFallback = (
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="text-center text-gray-300">
+        <div className="w-32 h-32 mx-auto mb-4 bg-gray-200 flex items-center justify-center">
+          <span className="text-4xl font-light">
+            {productName.charAt(0)}
+          </span>
+        </div>
+        <p className="text-lg font-light">Główne zdjęcie produktu</p>
+        <p className="text-sm opacity-70">
+          {hasValidImages
+            ? `Zdjęcie ${currentImageIndex + 1} z ${images.length}`
+            : 'Brak dostępnych zdjęć'
+          }
+        </p>
+      </div>
+    </div>
+  );
+
+  const thumbnailFallback = (index: number) => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+      <span className="text-gray-500 text-sm font-medium">{index + 1}</span>
+    </div>
+  );
 
   return (
     <div className="space-y-4">
       {/* Main Image */}
       <div className="relative aspect-square bg-gray-50 border border-gray-200 overflow-hidden">
-        {currentImageValid ? (
-          <img
+        {hasValidImages ? (
+          <ProductImage
             src={images[currentImageIndex]}
             alt={`${productName} - zdjęcie ${currentImageIndex + 1}`}
-            className="w-full h-full object-cover"
-            onError={() => handleImageError(currentImageIndex)}
+            fallback={mainImageFallback}
           />
         ) : (
-          // Fallback placeholder
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center text-gray-300">
-              <div className="w-32 h-32 mx-auto mb-4 bg-gray-200 flex items-center justify-center">
-                <span className="text-4xl font-light">
-                  {productName.charAt(0)}
-                </span>
-              </div>
-              <p className="text-lg font-light">Główne zdjęcie produktu</p>
-              <p className="text-sm opacity-70">
-                {hasValidImages 
-                  ? `Zdjęcie ${currentImageIndex + 1} z ${images.length}`
-                  : 'Brak dostępnych zdjęć'
-                }
-              </p>
-            </div>
-          </div>
+          mainImageFallback
         )}
 
         {/* Navigation arrows */}
@@ -67,14 +70,14 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
           <>
             <button
               onClick={prevImage}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors"
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors z-10"
             >
               <ChevronLeft className="w-5 h-5 text-gray-700" />
             </button>
             
             <button
               onClick={nextImage}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors"
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors z-10"
             >
               <ChevronRight className="w-5 h-5 text-gray-700" />
             </button>
@@ -83,7 +86,7 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
 
         {/* Image counter */}
         {images.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-black/50 text-white text-sm rounded-full">
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-black/50 text-white text-sm rounded-full z-10">
             {currentImageIndex + 1} / {images.length}
           </div>
         )}
@@ -102,18 +105,11 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              {!imageError[index] ? (
-                <img
-                  src={image}
-                  alt={`${productName} - miniatura ${index + 1}`}
-                  className="w-full h-full object-cover"
-                  onError={() => handleImageError(index)}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                  <span className="text-gray-500 text-sm font-medium">{index + 1}</span>
-                </div>
-              )}
+              <ProductImage
+                src={image}
+                alt={`${productName} - miniatura ${index + 1}`}
+                fallback={thumbnailFallback(index)}
+              />
             </button>
           ))}
         </div>

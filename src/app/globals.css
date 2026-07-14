@@ -165,6 +165,28 @@ textarea:focus-visible {
   animation: subtleBounce 2s ease-in-out infinite;
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f9fafb 0%,
+    #f3f4f6 20%,
+    #e5e7eb 50%,
+    #f3f4f6 80%,
+    #f9fafb 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
 /* Fix for footer dashed lines issue on Windows PC */
 footer.footer-fix {
   background-image: none !important;

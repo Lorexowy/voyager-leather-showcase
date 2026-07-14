@@ -2,15 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Eye, RefreshCw } from 'lucide-react';
+import { ArrowRight, Eye } from 'lucide-react';
 import { Product, formatDimensions } from '@/types';
 import { getFeaturedProducts } from '@/lib/products';
+import ProductImage from '@/components/ProductImage';
+import ProductCardSkeleton from '@/components/ProductCardSkeleton';
 
 export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
-  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
@@ -65,9 +66,18 @@ export default function FeaturedProducts() {
     return dimensions.replace(/(\d+)\s*x\s*(\d+)\s*cm/i, '$1×$2 cm');
   };
 
-  const handleImageError = (productId: string) => {
-    setImageErrors(prev => ({ ...prev, [productId]: true }));
-  };
+  const renderImageFallback = (productName: string) => (
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="text-center text-gray-300">
+        <div className="w-16 h-16 mx-auto mb-3 border border-gray-200 flex items-center justify-center">
+          <span className="text-xl font-light text-gray-400">
+            {productName.charAt(0)}
+          </span>
+        </div>
+        <p className="text-xs font-light text-gray-400 uppercase tracking-wider">Zdjęcie produktu</p>
+      </div>
+    </div>
+  );
 
   return (
     <section className="py-24 bg-white">
@@ -85,10 +95,10 @@ export default function FeaturedProducts() {
 
         {/* Loading state */}
         {isLoading ? (
-          <div className="text-center py-16">
-            <RefreshCw className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-4" />
-            <p className="text-gray-600 font-light">Ładowanie wyróżnionych produktów...</p>
-          </div>
+          <ProductCardSkeleton
+            count={4}
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8"
+          />
         ) : products.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 border border-gray-200 flex items-center justify-center mx-auto mb-6">
@@ -125,27 +135,17 @@ export default function FeaturedProducts() {
                     </div>
                   )}
 
-                  {/* Image - ZAKTUALIZOWANE DO PRAWDZIWYCH OBRAZÓW */}
+                  {/* Image */}
                   <div className="aspect-square bg-gray-50 relative overflow-hidden">
-                    {product.mainImage && !imageErrors[product.id] ? (
-                      <img
+                    {product.mainImage ? (
+                      <ProductImage
                         src={product.mainImage}
                         alt={product.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        onError={() => handleImageError(product.id)}
+                        className="transition-transform duration-500 group-hover:scale-105"
+                        fallback={renderImageFallback(product.name)}
                       />
                     ) : (
-                      // Fallback placeholder
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center text-gray-300">
-                          <div className="w-16 h-16 mx-auto mb-3 border border-gray-200 flex items-center justify-center">
-                            <span className="text-xl font-light text-gray-400">
-                              {product.name.charAt(0)}
-                            </span>
-                          </div>
-                          <p className="text-xs font-light text-gray-400 uppercase tracking-wider">Zdjęcie produktu</p>
-                        </div>
-                      </div>
+                      renderImageFallback(product.name)
                     )}
 
                     {/* Hover overlay - subtle */}

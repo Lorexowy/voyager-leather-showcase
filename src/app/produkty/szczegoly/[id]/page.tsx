@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductGallery from '@/components/ProductGallery';
+import ProductImage from '@/components/ProductImage';
 import { ArrowLeft, ArrowRight, Heart, Share2, Ruler, Palette, RefreshCw, AlertCircle } from 'lucide-react';
 import { Product, formatDimensions } from '@/types';
 import { getProductById, getSimilarProducts } from '@/lib/products';
@@ -18,7 +19,18 @@ function RelatedProductCard({
   product: Product; 
   getCategoryDisplayName: (category: string) => string;
 }) {
-  const [imageError, setImageError] = useState(false);
+  const imageFallback = (
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="text-center text-gray-300">
+        <div className="w-12 h-12 mx-auto mb-3 border border-gray-200 flex items-center justify-center">
+          <span className="text-lg font-light text-gray-400">
+            {product.name.charAt(0)}
+          </span>
+        </div>
+        <p className="text-xs font-light text-gray-400 uppercase tracking-wider">Zdjęcie produktu</p>
+      </div>
+    </div>
+  );
 
   return (
     <Link
@@ -26,25 +38,15 @@ function RelatedProductCard({
       className="group bg-white border border-gray-100 overflow-hidden hover:border-gray-900 transition-all duration-300"
     >
       <div className="aspect-square bg-gray-50 relative overflow-hidden">
-        {product.mainImage && !imageError ? (
-          <img
+        {product.mainImage ? (
+          <ProductImage
             src={product.mainImage}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            onError={() => setImageError(true)}
-            onLoad={() => setImageError(false)}
+            className="transition-transform duration-500 group-hover:scale-105"
+            fallback={imageFallback}
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center text-gray-300">
-              <div className="w-12 h-12 mx-auto mb-3 border border-gray-200 flex items-center justify-center">
-                <span className="text-lg font-light text-gray-400">
-                  {product.name.charAt(0)}
-                </span>
-              </div>
-              <p className="text-xs font-light text-gray-400 uppercase tracking-wider">Zdjęcie produktu</p>
-            </div>
-          </div>
+          imageFallback
         )}
       </div>
       

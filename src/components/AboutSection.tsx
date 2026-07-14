@@ -50,11 +50,6 @@ export default function AboutSection() {
                 akcesoria firmowe. Każdy produkt wykonywany jest ręcznie z najwyższej jakości skóry naturalnej,
                 co zapewnia nie tylko estetykę, ale i długowieczność.
               </p>
-              
-              <p>
-                Szczególnie dumni jesteśmy z naszej linii premium <strong className="font-medium text-gray-900">"AS | Aleksandra Sopel"</strong>, 
-                która reprezentuje absolutny szczyt jakości i designu w dziedzinie galanterii skórzanej.
-              </p>
             </div>
           </div>
 

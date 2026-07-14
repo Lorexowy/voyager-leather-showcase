@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
+import ProductCardSkeleton from '@/components/ProductCardSkeleton';
 import ProductFilters from '@/components/ProductFilters';
 import { Search, RefreshCw } from 'lucide-react';
 import { FilterOptions, Product } from '@/types';
@@ -111,15 +112,10 @@ export default function ProductsPage() {
           <div className="flex-1">
             {/* Loading state */}
             {isLoading ? (
-              <div className="text-center py-20">
-                <RefreshCw className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-4" />
-                <h3 className="text-xl font-light text-gray-900 mb-2">
-                  Ładowanie produktów...
-                </h3>
-                <p className="text-gray-600 font-light">
-                  Proszę czekać, pobieramy najnowsze produkty.
-                </p>
-              </div>
+              <ProductCardSkeleton
+                count={6}
+                className="grid md:grid-cols-2 xl:grid-cols-3 gap-8"
+              />
             ) : filteredProducts.length === 0 ? (
               <div className="text-center py-20">
                 <div className="w-20 h-20 border border-gray-200 flex items-center justify-center mx-auto mb-6">
