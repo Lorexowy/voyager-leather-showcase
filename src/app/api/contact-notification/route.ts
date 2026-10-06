@@ -121,9 +121,6 @@ export async function POST(request: Request): Promise<Response> {
     '',
     'Treść wiadomości:',
     data.message,
-    '',
-    'Kliknij „Odpowiedz”, aby napisać bezpośrednio do klienta.',
-    'Panel: https://www.voyagersopel.pl/admin/dashboard',
   ].join('\n');
 
   try {
