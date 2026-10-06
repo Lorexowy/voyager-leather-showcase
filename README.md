@@ -1,5 +1,42 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Formularz kontaktowy — Resend na Vercel
+
+Formularz najpierw zapisuje zapytanie w `contactMessages` w Firestore,
+a następnie wywołuje `POST /api/contact-notification`. Endpoint wysyła wiadomość
+przez API Resend z adresu `formularz@voyagersopel.pl` na stały adres
+`voyager.sopel@gmail.com`. `Reply-To` zawiera adres klienta.
+
+- W Vercel ustaw sekret `RESEND_API_KEY` dla środowiska Production i wdroż zmiany.
+  Nie używaj prefiksu `NEXT_PUBLIC_`. Domena `voyagersopel.pl` musi być verified
+  w Resend, a klucz musi mieć uprawnienie do wysyłki z tej domeny.
+- Lokalnie można ustawić ten sam sekret w ignorowanym przez Git `.env.local`.
+  Testy automatyczne używają atrap i nie wysyłają prawdziwych wiadomości.
+- Nie są potrzebne dodatkowe sekrety Firebase ani zmiany reguł Firestore.
+  Wysyłka z podglądu Vercel wymaga klucza dla środowiska Preview; bez niego
+  zapytanie nadal zapisze się w bazie, ale powiadomienie nie zostanie wysłane.
+
+Powiadomienie jest ponawiane jeden raz przy błędzie sieci lub odpowiedzi 5xx.
+Obie próby używają tego samego ID dokumentu i klucza idempotencji Resend
+(Resend przechowuje te klucze przez 24 godziny). Błąd powiadomienia nie powoduje
+ponownego zapisu ani komunikatu o nieprzyjęciu zapytania. Nie ma kolejki w tle:
+zamknięcie strony przed wywołaniem endpointu może oznaczać brak e-maila.
+
+Endpoint waliduje dane, zgodę, rozmiar i Origin; odbiorca i nadawca są stałe.
+Formularz zawiera honeypot i blokadę równoczesnego wysyłania. Limity API
+(5 prób na adres IP / 10 minut, 100 prób łącznie / 10 minut) działają tylko
+w obrębie pojedynczej instancji Vercel. Origin i honeypot nie uwierzytelniają
+nadawcy, a bez dostępu serwerowego do Firestore endpoint nie potwierdza, czy
+przekazane ID rzeczywiście istnieje w bazie. Przy nasilonym spamie potrzebne
+będą limity w Vercel Firewall lub trwały limiter / ochrona botów.
+
+Weryfikacja: `npm run test:contact`, `npx tsc --noEmit`, `npm run build`.
+Po wdrożeniu wyślij zapytanie ogólne i zapytanie z karty produktu, sprawdź
+oba wpisy w panelu i wiadomości w Gmailu (również Spam), a następnie sprawdź
+adres odbiorcy po kliknięciu „Odpowiedz”. Błędy wysyłki są widoczne w logach
+Vercel, a statusy wiadomości w Resend; treść zapytań i klucz nie są logowane
+przez endpoint powiadomień.
+
 ## Getting Started
 
 First, run the development server:

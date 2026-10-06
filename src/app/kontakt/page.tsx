@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -35,16 +35,7 @@ const contactInfo = [
 // Komponent który używa useSearchParams musi być w Suspense
 function ContactFormWrapper() {
   const searchParams = useSearchParams();
-  const [selectedProduct, setSelectedProduct] = useState<string>('');
-
-  useEffect(() => {
-    const productId = searchParams.get('product');
-    if (productId) {
-      setSelectedProduct(productId);
-    }
-  }, [searchParams]);
-
-  return <ContactForm selectedProductId={selectedProduct} />;
+  return <ContactForm selectedProductId={searchParams.get('product') || ''} />;
 }
 
 export default function ContactPage() {
@@ -60,7 +51,7 @@ export default function ContactPage() {
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light leading-relaxed">
             Masz pytania o nasze produkty? Skontaktuj się z nami – 
-            odpowiemy w ciągu 24 godzin.
+            odpowiemy do 48 godzin.
           </p>
         </div>
 

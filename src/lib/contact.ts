@@ -16,9 +16,9 @@ import { COLLECTIONS, FirestoreContactMessage, convertFirestoreContactMessage } 
 import { ContactForm } from '@/types';
 
 // Wyślij wiadomość kontaktową
-export const submitContactForm = async (formData: ContactForm): Promise<void> => {
+export const submitContactForm = async (formData: ContactForm): Promise<string> => {
   try {
-    await addDoc(collection(db, COLLECTIONS.CONTACT_MESSAGES), {
+    const messageRef = await addDoc(collection(db, COLLECTIONS.CONTACT_MESSAGES), {
       name: formData.name,
       email: formData.email,
       phone: formData.phone || '',
@@ -31,6 +31,7 @@ export const submitContactForm = async (formData: ContactForm): Promise<void> =>
       consentGiven: formData.consentGiven || false,
       consentTimestamp: formData.consentTimestamp || '',
     });
+    return messageRef.id;
   } catch (error) {
     console.error('Error submitting contact form:', error);
     throw new Error('Nie udało się wysłać wiadomości');

@@ -324,7 +324,7 @@ export default function ProductDetailsPage() {
                 <li>• Wykonane ze skóry naturalnej najwyższej jakości</li>
                 <li>• Ręczne wykonanie przez doświadczonych rzemieślników</li>
                 <li>• Możliwość personalizacji na specjalne zamówienie</li>
-                <li>• Odpowiedź na zapytania w ciągu 24 godzin</li>
+                <li>• Odpowiedź na zapytania do 48 godzin</li>
               </ul>
             </div>
           </div>

@@ -239,7 +239,7 @@ export default function RegulaminPage() {
                   </li>
                   <li className="flex items-start space-x-3">
                     <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
-                    <span>Administrator odpowiada na zapytania w ciągu 24-48 godzin</span>
+                    <span>Administrator odpowiada na zapytania do 48 godzin</span>
                   </li>
                   <li className="flex items-start space-x-3">
                     <span className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
