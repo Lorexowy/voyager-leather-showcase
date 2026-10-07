@@ -170,10 +170,13 @@ export default function Header() {
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
             </Link>
             <Link 
-              href="/alpelia" 
+              href="https://www.alpelia.pl"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light relative group"
             >
-              Sprzedaż detaliczna
+              Sklep Alpelia
+              <span className="sr-only"> (otwiera się w nowej karcie)</span>
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
             </Link>
           </nav>
@@ -251,11 +254,14 @@ export default function Header() {
               Kontakt
             </Link>
             <Link 
-              href="/alpelia" 
+              href="https://www.alpelia.pl"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light transform hover:translate-x-1"
               onClick={() => setIsMenuOpen(false)}
             >
-              Sprzedaż detaliczna
+              Sklep Alpelia
+              <span className="sr-only"> (otwiera się w nowej karcie)</span>
             </Link>
           </div>
         </div>
