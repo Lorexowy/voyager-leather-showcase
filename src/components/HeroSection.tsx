@@ -6,10 +6,10 @@ import Image from 'next/image';
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center">
-      {/* Background Image with white border on desktop only */}
-      <div className="absolute inset-0 z-0 lg:p-8">
-        <div className="relative w-full h-full lg:border-4 lg:border-white/20 lg:rounded-lg lg:overflow-hidden">
+    <section className="relative min-h-[85vh] lg:min-h-screen lg:min-h-[100svh] lg:pt-20 flex items-center justify-center">
+      {/* Full-width background extends behind the desktop header. */}
+      <div className="absolute inset-0 z-0">
+        <div className="relative w-full h-full overflow-hidden">
           <Image
             src="/images/HeroBanner.jpg"
             alt="Galanteria skórzana Voyager"
@@ -17,9 +17,11 @@ export default function HeroSection() {
             className="object-cover"
             priority
             quality={90}
+            sizes="100vw"
           />
           {/* Dark overlay for better text readability */}
           <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0 hidden lg:block bg-gradient-to-b from-black/35 via-transparent to-transparent"></div>
         </div>
       </div>
 

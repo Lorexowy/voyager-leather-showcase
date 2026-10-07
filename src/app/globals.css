@@ -46,6 +46,43 @@ h1, h2, h3, h4, h5, h6 {
   scroll-behavior: smooth;
 }
 
+/* Only the homepage desktop header overlays the hero. Its height stays fixed
+   through the color change, so scrolling never changes the page layout. */
+@media (min-width: 1024px) {
+  .home-header {
+    background-color: #fff;
+    border-color: #f3f4f6;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transition: background-color 200ms ease, border-color 200ms ease;
+  }
+
+  .home-header[data-transparent="true"] {
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  .home-header[data-transparent="true"] .header-desktop-link {
+    color: #fff;
+  }
+
+  .home-header-logo {
+    transition: filter 200ms ease;
+  }
+
+  .home-header[data-transparent="true"] .home-header-logo {
+    filter: brightness(0) invert(1);
+  }
+}
+
+@media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
+  .home-header,
+  .home-header .header-desktop-link,
+  .home-header-logo {
+    transition: none;
+  }
+}
+
 /* Line clamp utilities */
 .line-clamp-1 {
   overflow: hidden;

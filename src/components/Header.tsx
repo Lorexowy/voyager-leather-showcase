@@ -6,14 +6,31 @@ import Image from 'next/image';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { CATEGORIES } from '@/types';
 
-export default function Header() {
+interface HeaderProps {
+  overlayHero?: boolean;
+}
+
+export default function Header({ overlayHero = false }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  useEffect(() => {
+    if (!overlayHero) return;
+    const updateScrollState = () => setHasScrolled(window.scrollY > 8);
+    updateScrollState();
+    window.addEventListener('scroll', updateScrollState, { passive: true });
+    window.addEventListener('pageshow', updateScrollState);
+    return () => {
+      window.removeEventListener('scroll', updateScrollState);
+      window.removeEventListener('pageshow', updateScrollState);
+    };
+  }, [overlayHero]);
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) {
@@ -70,7 +87,12 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
+    <header
+      data-transparent={overlayHero && !hasScrolled}
+      className={`bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50 ${
+        overlayHero ? 'home-header lg:fixed lg:inset-x-0' : ''
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo - prawdziwe logo SVG */}
@@ -80,7 +102,7 @@ export default function Header() {
                 src="/images/logo/logovoyager.svg"
                 alt="Voyager Logo"
                 fill
-                className="object-contain"
+                className={`object-contain ${overlayHero ? 'home-header-logo' : ''}`}
                 priority
               />
             </div>
@@ -90,10 +112,10 @@ export default function Header() {
           <nav className="hidden md:flex items-center space-x-12">
             <Link 
               href="/" 
-              className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light relative group"
+              className="header-desktop-link text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light relative group"
             >
               Strona główna
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
             </Link>
             
             {/* Dropdown Products - hover activated with proper delay */}
@@ -104,11 +126,11 @@ export default function Header() {
             >
               <button
                 ref={buttonRef}
-                className="flex items-center space-x-1 text-gray-700 hover:text-gray-900 transition-all duration-200 font-light relative group"
+                className="header-desktop-link flex items-center space-x-1 text-gray-700 hover:text-gray-900 transition-all duration-200 font-light relative group"
               >
                 <span className="relative">
                   Produkty
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
                 </span>
                 <ChevronDown 
                   className={`w-4 h-4 transition-transform duration-300 ${
@@ -150,34 +172,34 @@ export default function Header() {
 
             <Link 
               href="/o-nas" 
-              className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light relative group"
+              className="header-desktop-link text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light relative group"
             >
               O nas
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
             </Link>
             <Link 
               href="/dla-firm" 
-              className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light relative group"
+              className="header-desktop-link text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light relative group"
             >
               Dla Firm
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
             </Link>
             <Link 
               href="/kontakt" 
-              className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light relative group"
+              className="header-desktop-link text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light relative group"
             >
               Kontakt
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
             </Link>
             <Link 
               href="https://www.alpelia.pl"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light relative group"
+              className="header-desktop-link text-gray-700 hover:text-gray-900 transition-colors duration-200 font-light relative group"
             >
               Sklep Alpelia
               <span className="sr-only"> (otwiera się w nowej karcie)</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
             </Link>
           </nav>
 
